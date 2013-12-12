@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 65d2b8003b175108e2b82203817da244)
-version = "0.0.1"
+# DO NOT EDIT (digest: 48589887ed9ed068128286b49924ce03)
+version = "0.1.0"
 description = "An easy interface on top of the Jsonm library"
 requires = "jsonm"
 archive(byte) = "ezjsonm.cma"
