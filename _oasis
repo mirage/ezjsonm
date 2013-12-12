@@ -1,0 +1,22 @@
+OASISFormat: 0.3
+Name:        ezjsonm
+Version:     0.0.1
+Synopsis:    An easy interface on top of the Jsonm library
+Authors:     Thomas Gazagnaire
+License:     ISC
+Plugins:     META (0.3), DevFiles (0.3)
+BuildTools:  ocamlbuild
+
+Library ezjsonm
+  Path: lib
+  Findlibname: ezjsonm
+  Modules: Ezjsonm
+  BuildDepends:	jsonm
+
+Document ezjsonm
+  Title:                Ezjsonm docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Install:              true
+  XOCamlbuildPath:      lib
+  XOCamlbuildLibraries: ezjsonm
