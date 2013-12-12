@@ -1,6 +1,7 @@
 ## Ezjsonm
 
-An easy interface on top of the Jsonm[1] library.
+An easy interface on top of the
+[Jsonm](http://erratique.ch/software/jsonm) library.
 
 This version provides more convenient (but far less flexible)
 input and output functions that go to and from [string] values.
@@ -12,9 +13,11 @@ use it directly, rather than be saddled with the Ezjsonm interface.
 
 ### Examples
 
-For instance, you can explore the HTTP codes specified in
-https://raw.github.com/citricsquid/httpstatus.es/master/codes/4.json. After
-downloading that file, you can open an OCaml session and type:
+For instance, you can explore the HTTP status code specified in the
+JSON format [here](https://github.com/citricsquid/httpstatus.es).
+After downloading [that
+file](https://raw.github.com/citricsquid/httpstatus.es/master/codes/4.json),
+you can open an OCaml toplevel and write:
 
 ```ocaml
 # #require "ezjsonm";;
@@ -22,5 +25,3 @@ downloading that file, you can open an OCaml session and type:
 # Ezjsonm.(get_string (find json ["codes"; "418"; "summary"]))
 - : string = "I'm a teapot"
 ```
-
-[1] http://erratique.ch/software/jsonm
