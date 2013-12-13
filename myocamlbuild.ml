@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 1bd59e37981b3402aa58b5429ad4d9dd) *)
+(* DO NOT EDIT (digest: 4c43552170cee0fe359cfa8bf872c303) *)
 module OASISGettext = struct
 (* # 21 "src/oasis/OASISGettext.ml" *)
 
@@ -477,7 +477,8 @@ end
 open Ocamlbuild_plugin;;
 let package_default =
   {
-     MyOCamlbuildBase.lib_ocaml = [("ezjsonm", ["lib"])];
+     MyOCamlbuildBase.lib_ocaml =
+       [("ezjsonm", ["lib"]); ("ezjsonm-lwt", ["lib"])];
      lib_c = [];
      flags = [];
      includes = [];
@@ -486,6 +487,6 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 490 "myocamlbuild.ml"
+# 491 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

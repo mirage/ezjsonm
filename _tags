@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 683e5e64b2ae6bdbaf4e39c05dac4631)
+# DO NOT EDIT (digest: ca35839ca2a61f7387fcc073c0b647a3)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -15,5 +15,9 @@
 "_darcs": not_hygienic
 # Library ezjsonm
 "lib/ezjsonm.cmxs": use_ezjsonm
+# Library ezjsonm-lwt
+"lib/ezjsonm-lwt.cmxs": use_ezjsonm-lwt
+<lib/*.ml{,i}>: use_ezjsonm
+<lib/*.ml{,i}>: pkg_lwt
 <lib/*.ml{,i}>: pkg_jsonm
 # OASIS_STOP
