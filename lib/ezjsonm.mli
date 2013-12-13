@@ -105,6 +105,9 @@ exception Parse_error of t * string
 val get_unit: t -> unit
 (** Check that the JSON document is [`Null]. *)
 
+val get_bool: t -> bool
+(** Extract [b] from [`Bool b]. *)
+
 val get_string: t -> string
 (** Extract [s] from [`String s]. *)
 
