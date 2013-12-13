@@ -23,8 +23,6 @@ type t =
   | `A of t list
   | `O of (string * t) list ]
 
-type 'a stream = unit -> 'a option
-
 exception Escape of ((int * int) * (int * int)) * Jsonm.error
 
 let json_of_src src =
@@ -53,55 +51,6 @@ let json_of_src src =
   in
   try `JSON (value (dec ()) (fun v -> v))
   with Escape (r, e) -> `Error (r, e)
-
-let from_stream (stream: string stream): t stream =
-  let d = Jsonm.decoder `Manual in
-  let rec dec () = match Jsonm.decode d with
-    | `Lexeme l -> l
-    | `Error e  -> raise (Escape (Jsonm.decoded_range d, e))
-    | `End      -> assert false
-    | `Await    ->
-      match stream () with
-      | None    -> raise (Escape (Jsonm.decoded_range d, (`Expected `Value)))
-      | Some str ->
-        Jsonm.Manual.src d str 0 (String.length str);
-        dec ()
-  in
-  let rec value v k = match v with
-    | `Os -> obj [] k
-    | `As -> arr [] k
-    | `Null
-    | `Bool _
-    | `String _
-    | `Float _ as v -> k v
-    | _ -> assert false
-  and arr vs k =
-    match dec () with
-    | `Ae -> k (`A (List.rev vs))
-    | v   -> value v (fun v -> arr (v :: vs) k)
-  and obj ms k =
-    match dec () with
-    | `Oe     -> k (`O (List.rev ms))
-    | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
-    | _       -> assert false
-  in
-  let open_stream () =
-    match dec () with
-    | `As -> ()
-    | l   -> raise (Escape (Jsonm.decoded_range d, `Expected (`Aval true)))
-  in
-  let get () =
-    try Some (value (dec ()) (fun x -> x))
-    with Escape _ -> None
-  in
-  let opened = ref false in
-  function () ->
-    if not !opened then (
-      open_stream ();
-      opened := true;
-      get ()
-    ) else
-      get ()
 
 let to_dst ?(minify=true) dst (json:t) =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in

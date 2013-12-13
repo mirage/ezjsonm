@@ -37,9 +37,6 @@ type t =
   | `O of (string * t) list ]
 (** The type of JSON documents. *)
 
-type 'a stream = unit -> 'a option
-(** The type of streams. *)
-
 (** {2 Reading JSON documents} *)
 
 val from_channel: in_channel -> t
@@ -50,12 +47,6 @@ val from_string: string -> t
 
 val from_src: Jsonm.src -> t
 (** Low-level function to read directly from an [Jsonm] source. *)
-
-val from_stream: string stream -> t stream
-(** Convert a stream of strings into a stream of JSON documents. The
-    stream itself is sent as an open JSON array. This way, we can
-    detect properly closed streams by checking that the top-level
-    array is properly closed. Otherwise, throw an error. *)
 
 (** {2 Writing JSON documents} *)
 

@@ -7,11 +7,24 @@ License:     ISC
 Plugins:     META (0.3), DevFiles (0.3)
 BuildTools:  ocamlbuild
 
+Flag lwt
+  Description: build the support for Lwt streams
+  Default: false
+
 Library ezjsonm
   Path: lib
   Findlibname: ezjsonm
   Modules: Ezjsonm
   BuildDepends:	jsonm
+
+Library "ezjsonm-lwt"
+  Build$: flag(lwt)
+  Install$: flag(lwt)
+  Path: lib
+  Findlibname: lwt
+  FindlibParent: ezjsonm
+  Modules: Ezjsonm_lwt
+  BuildDepends:	ezjsonm, lwt
 
 Document ezjsonm
   Title:                Ezjsonm docs
