@@ -147,3 +147,19 @@ val update: t -> string list -> t option -> t
 
 val map: (t -> t option) -> t -> string list -> t
 (** Apply a given function to a subdocument. *)
+
+val encode_string: string -> t
+(** Convert a (possibly non-valid UTF8) string to a JSON object.*)
+
+val decode_string: t -> string option
+(** Convert a JSON object to a (possibly non-valid UTF8)
+    string. Return [None] if the JSON object is not a valid string. *)
+
+val decode_string_exn: t -> string
+(** Convert a JSON object to a (possibly non-valid UTF8) string. *)
+
+val to_sexp: t -> Sexplib.Type.t
+(** Convert a JSON object to an S-expression. *)
+
+val of_sexp: Sexplib.Type.t -> t
+(** Convert an S-expression to a JSON object. *)

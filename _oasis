@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        ezjsonm
-Version:     0.2.0
+Version:     0.3.0
 Synopsis:    An easy interface on top of the Jsonm library
 Authors:     Thomas Gazagnaire
 License:     ISC
@@ -15,7 +15,7 @@ Library ezjsonm
   Path: lib
   Findlibname: ezjsonm
   Modules: Ezjsonm
-  BuildDepends:	jsonm
+  BuildDepends: jsonm, hex, uutf, sexplib
 
 Library "ezjsonm-lwt"
   Build$: flag(lwt)
@@ -24,7 +24,7 @@ Library "ezjsonm-lwt"
   Findlibname: lwt
   FindlibParent: ezjsonm
   Modules: Ezjsonm_lwt
-  BuildDepends:	ezjsonm, lwt
+  BuildDepends: ezjsonm, lwt
 
 Document ezjsonm
   Title:                Ezjsonm docs

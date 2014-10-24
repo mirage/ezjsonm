@@ -219,3 +219,41 @@ let map (f:t -> t option) (t:t) path =
 
 let update (t:t) path (v:t option) =
   map (fun _ -> v) t path
+
+let is_valid_utf8 str =
+  try
+    Uutf.String.fold_utf_8 (fun _ _ -> function
+        | `Malformed _ -> raise (Failure "utf8")
+        | _ -> ()
+      ) () str;
+    true
+  with Failure "utf8" -> false
+
+let encode_string str =
+  if is_valid_utf8 str
+  then string str
+  else
+    let `Hex h = Hex.of_string str in
+    `O [ "hex", string h ]
+
+let decode_string = function
+  | `String str               -> Some str
+  | `O [ "hex", `String str ] -> Some (Hex.to_string (`Hex str))
+  | j                         -> None
+
+let decode_string_exn j =
+  match decode_string j with
+  | Some s -> s
+  | None   -> parse_error j "Ezjsonm.decode_string_exn"
+
+let rec of_sexp = function
+  | Sexplib.Type.Atom x -> encode_string x
+  | Sexplib.Type.List l -> list of_sexp l
+
+let rec to_sexp json =
+  match decode_string json with
+  | Some s -> Sexplib.Type.Atom s
+  | None   ->
+    match json with
+    | `A l -> Sexplib.Type.List (List.map to_sexp l)
+    | _    -> parse_error json "Ezjsonm.to_sexp"
