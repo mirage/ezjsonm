@@ -1,3 +1,7 @@
+0.3.0 (2014-10-24)
+* Add sexpilb conversion functions
+* Add functions to encode/decode non utf8 strings (using hex encoding)
+
 0.2.0 (2012-12-13)
 * Add a new module `Ezjsonm_lwt`, to convert string streams to json streams
 * Expose `Ezjsonm.get_bool`
