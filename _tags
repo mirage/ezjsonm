@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: c9d94dd48e60eab5b62de0c3fc432f7c)
+# DO NOT EDIT (digest: 62fbc8ecb1b5356e5e1700296baa2ad5)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
+true: annot, bin_annot
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
 ".bzr": -traverse
@@ -17,10 +18,10 @@
 "lib/ezjsonm.cmxs": use_ezjsonm
 # Library ezjsonm-lwt
 "lib/ezjsonm-lwt.cmxs": use_ezjsonm-lwt
-<lib/*.ml{,i}>: pkg_hex
-<lib/*.ml{,i}>: pkg_jsonm
-<lib/*.ml{,i}>: pkg_lwt
-<lib/*.ml{,i}>: pkg_sexplib
-<lib/*.ml{,i}>: pkg_uutf
-<lib/*.ml{,i}>: use_ezjsonm
+<lib/*.ml{,i,y}>: pkg_hex
+<lib/*.ml{,i,y}>: pkg_jsonm
+<lib/*.ml{,i,y}>: pkg_lwt
+<lib/*.ml{,i,y}>: pkg_sexplib
+<lib/*.ml{,i,y}>: pkg_uutf
+<lib/*.ml{,i,y}>: use_ezjsonm
 # OASIS_STOP
