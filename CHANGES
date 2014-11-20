@@ -1,3 +1,6 @@
+0.3.1 (2014-11-20)
+* Expose [parse_error]
+
 0.3.0 (2014-10-24)
 * Add sexpilb conversion functions
 * Add functions to encode/decode non utf8 strings (using hex encoding)
