@@ -163,3 +163,10 @@ val to_sexp: t -> Sexplib.Type.t
 
 val of_sexp: Sexplib.Type.t -> t
 (** Convert an S-expression to a JSON object. *)
+
+(** {2 Error handling} *)
+
+exception Parse_error of t * string
+
+val parse_error: t -> ('a, unit, string, 'b) format4 -> 'a
+(** Raise [Parse_error] *)
