@@ -23,6 +23,10 @@ type t =
   | `A of t list
   | `O of (string * t) list ]
 
+type encodable_json =
+  [ `A of t list
+  | `O of (string * t) list ]
+
 exception Escape of ((int * int) * (int * int)) * Jsonm.error
 
 let json_of_src src =
@@ -52,7 +56,7 @@ let json_of_src src =
   try `JSON (value (dec ()) (fun v -> v))
   with Escape (r, e) -> `Error (r, e)
 
-let to_dst ?(minify=true) dst (json:t) =
+let to_dst ?(minify=true) dst json =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
   let rec value v k e = match v with
     | `A vs -> arr vs k e
@@ -69,9 +73,7 @@ let to_dst ?(minify=true) dst (json:t) =
   in
   let e = Jsonm.encoder ~minify dst in
   let finish e = ignore (Jsonm.encode e `End) in
-  match json with
-  | `A _ | `O _ as json -> value json finish e
-  | _ -> invalid_arg "invalid json text"
+  value (json :> t) finish e
 
 let to_buffer ?minify buf json =
   to_dst ?minify (`Buffer buf) json
