@@ -35,6 +35,10 @@ type t =
   | `String of string
   | `A of t list
   | `O of (string * t) list ]
+
+type encodable_json =
+  [ `A of t list
+  | `O of (string * t) list ]
 (** The type of JSON documents. *)
 
 (** {2 Reading JSON documents} *)
@@ -50,17 +54,17 @@ val from_src: Jsonm.src -> t
 
 (** {2 Writing JSON documents} *)
 
-val to_channel: ?minify:bool -> out_channel -> t -> unit
+val to_channel: ?minify:bool -> out_channel -> encodable_json -> unit
 (** Write a JSON document to an output channel. *)
 
-val to_buffer: ?minify:bool -> Buffer.t -> t -> unit
+val to_buffer: ?minify:bool -> Buffer.t -> encodable_json -> unit
 (** Write a JSON document to a buffer. *)
 
-val to_string: ?minify:bool -> t -> string
+val to_string: ?minify:bool -> encodable_json -> string
 (** Write a JSON document to a string. This goes via an intermediate
     buffer and so may be slow on large documents. *)
 
-val to_dst: ?minify:bool -> Jsonm.dst-> t -> unit
+val to_dst: ?minify:bool -> Jsonm.dst-> encodable_json -> unit
 (** Low-level function to write directly to a [Jsonm] destination. *)
 
 (** {2 Constructors} *)
