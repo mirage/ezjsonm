@@ -1,3 +1,10 @@
+0.4.0 (2014-12-17)
+* Clean-up the typed representation of serializable JSON
+    (#5, report and patch from Rudi Grinberg)
+* add int32/int64/triple combinators
+* fix a bug with the option types
+* fix the type of the `unit` combinator
+
 0.3.1 (2014-11-20)
 * Expose [parse_error]
 
