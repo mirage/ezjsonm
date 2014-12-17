@@ -39,3 +39,14 @@ configure:
 .PHONY: build doc test all install uninstall reinstall clean distclean configure
 
 # OASIS_STOP
+
+VERSION = $$(shell grep 'Version:' _oasis | sed 's/Version: *//')
+NAME    = $$(shell grep 'Name:' _oasis    | sed 's/Name: *//')
+ARCHIVE = https://github.com/mirage/ezjsonm/archive/
+
+release:
+	git tag -a v$(VERSION) -m "Version $(VERSION)."
+	git push upstream $(VERSION)
+	opam publish prepare $(NAME).$(VERSION) $(ARCHIVE)/$(VERSION).tar.gz
+	opam publish submit $(NAME_VERSION)
+	rm -rf $(NAME_VERSION)
