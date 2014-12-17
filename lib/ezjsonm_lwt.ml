@@ -19,7 +19,7 @@ open Ezjsonm
 
 exception Escape of ((int * int) * (int * int)) * Jsonm.error
 
-let from_stream (stream: string Lwt_stream.t): t Lwt_stream.t =
+let from_stream (stream: string Lwt_stream.t): value Lwt_stream.t =
   let d = Jsonm.decoder `Manual in
   let rec dec () = match Jsonm.decode d with
     | `Lexeme l -> return l
