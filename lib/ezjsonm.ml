@@ -15,17 +15,19 @@
  *)
 
 (* From http://erratique.ch/software/jsonm/doc/Jsonm.html#datamodel *)
-type t =
+type value =
   [ `Null
   | `Bool of bool
   | `Float of float
   | `String of string
-  | `A of t list
-  | `O of (string * t) list ]
+  | `A of value list
+  | `O of (string * value) list ]
 
-type encodable_json =
-  [ `A of t list
-  | `O of (string * t) list ]
+type t =
+  [ `A of value list
+  | `O of (string * value) list ]
+
+let value: t -> value = fun t -> (t :> value)
 
 exception Escape of ((int * int) * (int * int)) * Jsonm.error
 
@@ -53,15 +55,17 @@ let json_of_src src =
     | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
     | _       -> assert false
   in
-  try `JSON (value (dec ()) (fun v -> v))
+  try `JSON (value (dec ()) (function #t as x -> x | _  -> assert false))
   with Escape (r, e) -> `Error (r, e)
 
 let to_dst ?(minify=true) dst json =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
-  let rec value v k e = match v with
+  let rec t v k e = match v with
     | `A vs -> arr vs k e
     | `O ms -> obj ms k e
+  and value v k e = match v with
     | `Null | `Bool _ | `Float _ | `String _ as v -> enc e v; k e
+    | #t as x -> t (x :> t) k e
   and arr vs k e = enc e `As; arr_vs vs k e
   and arr_vs vs k e = match vs with
     | v :: vs' -> value v (arr_vs vs' k) e
@@ -73,7 +77,7 @@ let to_dst ?(minify=true) dst json =
   in
   let e = Jsonm.encoder ~minify dst in
   let finish e = ignore (Jsonm.encode e `End) in
-  value (json :> t) finish e
+  t json finish e
 
 let to_buffer ?minify buf json =
   to_dst ?minify (`Buffer buf) json
@@ -86,12 +90,18 @@ let to_string ?minify json =
 let to_channel ?minify oc json =
   to_dst ?minify (`Channel oc) json
 
-exception Parse_error of t * string
+exception Parse_error of value * string
 
 let parse_error t fmt =
   Printf.kprintf (fun msg ->
       raise (Parse_error (t, msg))
     ) fmt
+
+let wrap t = `A [t]
+
+let unwrap = function
+  | `A [t] -> t
+  | v -> parse_error (v :> value) "Not unwrappable"
 
 let string_of_error error =
   Jsonm.pp_error Format.str_formatter error;
@@ -99,7 +109,7 @@ let string_of_error error =
 
 let from_src src: t =
   match json_of_src src with
-  | `JSON j      -> j
+  | `JSON t      -> t
   | `Error (_,e) -> parse_error `Null "JSON.of_buffer %s" (string_of_error e)
 
 let from_string str = from_src (`String str)
@@ -107,7 +117,7 @@ let from_string str = from_src (`String str)
 let from_channel chan = from_src (`Channel chan)
 
 (* unit *)
-let unit = `Null
+let unit () = `Null
 
 let get_unit = function
   | `Null  -> ()
@@ -129,9 +139,19 @@ let get_string = function
 
 (* int *)
 let int i = `Float (float_of_int i)
+let int32 i = `Float (Int32.to_float i)
+let int64 i = `Float (Int64.to_float i)
 
 let get_int = function
   | `Float f -> int_of_float f
+  | j        -> parse_error j "Ezjsonm.get_int"
+
+let get_int32 = function
+  | `Float f -> Int32.of_float f
+  | j        -> parse_error j "Ezjsonm.get_int"
+
+let get_int64 = function
+  | `Float f -> Int64.of_float f
   | j        -> parse_error j "Ezjsonm.get_int"
 
 (* flooat *)
@@ -157,14 +177,15 @@ let get_strings = get_list get_string
 (* options *)
 let option fn = function
   | None   -> `Null
-  | Some x -> fn x
+  | Some x -> `A [fn x]
 
-let get_option fn (json:t) = match json with
+let get_option fn = function
   | `Null  -> None
-  |  _     -> Some (fn json)
+  | `A [j] -> Some (fn j)
+  | j -> parse_error j "Ezjsonm.get_option"
 
 (* dict *)
-let dict d : t = `O d
+let dict d = `O d
 
 let get_dict = function
   | `O d -> d
@@ -178,14 +199,23 @@ let get_pair fk fv = function
   | `A [k; v] -> (fk k, fv v)
   | j         -> parse_error j "Ezjsonm.get_pair"
 
-let mem (t:t) path =
+(* triple *)
+
+let triple fa fb fc (a, b, c) =
+  `A [fa a; fb b; fc c]
+
+let get_triple fa fb fc = function
+  | `A [a; b; c] -> (fa a, fb b, fc c)
+  | j -> parse_error j "Ezjsonm.get_triple"
+
+let mem t path =
   let rec aux j p = match p, j with
     | []   , _    -> true
     | h::tl, `O o -> List.mem_assoc h o && aux (List.assoc h o) tl
     | _           -> false in
   aux t path
 
-let find (t:t) path =
+let find t path =
   let rec aux j p = match p, j with
     | []   , j    -> j
     | h::tl, `O o -> aux (List.assoc h o) tl
@@ -208,7 +238,7 @@ let map_dict f dict label =
         aux (e::acc) dict in
   aux [] dict
 
-let map (f:t -> t option) (t:t) path =
+let map f t path =
   let rec aux t = function
     | []    -> f t
     | h::tl ->
@@ -219,7 +249,7 @@ let map (f:t -> t option) (t:t) path =
   | None   -> raise Not_found
   | Some j -> j
 
-let update (t:t) path (v:t option) =
+let update t path v =
   map (fun _ -> v) t path
 
 let is_valid_utf8 str =

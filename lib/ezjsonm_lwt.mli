@@ -16,7 +16,7 @@
 
 (** Interface with Lwt streams. *)
 
-val from_stream: string Lwt_stream.t -> Ezjsonm.t Lwt_stream.t
+val from_stream: string Lwt_stream.t -> Ezjsonm.value Lwt_stream.t
 (** Convert a stream of strings into a stream of JSON documents. The
     stream itself is sent as an open JSON array. This way, we can
     detect properly closed streams by checking that the top-level
