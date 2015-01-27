@@ -94,13 +94,13 @@ val strings: string list -> value
 (** Same as [`A [`String s1; ..; `String sn]]. *)
 
 val int: int -> value
-(** Same as [`Float (int_of_string i)]. *)
+(** Same as [`Float (float_of_int i)]. *)
 
 val int32: int32 -> value
-(** Same as [`Float (Int32.of_string i) *)
+(** Same as [`Float (Int32.to_float i)] *)
 
 val int64: int64 -> value
-(** Same as [`Float (Int64.of_string i) *)
+(** Same as [`Float (Int64.to_float i)] *)
 
 val float: float -> value
 (** Some as [`Float f]. *)
