@@ -90,7 +90,7 @@ val bool: bool -> value
 val string: string -> value
 (** Same as [`String s]. *)
 
-val strings: string list -> value
+val strings: string list -> t
 (** Same as [`A [`String s1; ..; `String sn]]. *)
 
 val int: int -> value
@@ -105,20 +105,20 @@ val int64: int64 -> value
 val float: float -> value
 (** Some as [`Float f]. *)
 
-val list: ('a -> value) -> 'a list -> value
+val list: ('a -> value) -> 'a list -> t
 (** Build a list of values. *)
 
 val option: ('a -> value) -> 'a option -> value
 (** Either [`Null] or a JSON value. *)
 
-val dict: (string * value) list -> value
+val dict: (string * value) list -> t
 (** Build a dictionnary. *)
 
-val pair: ('a -> value) -> ('b -> value) -> ('a * 'b) -> value
+val pair: ('a -> value) -> ('b -> value) -> ('a * 'b) -> t
 (** Build a pair. *)
 
 val triple: ('a -> value) -> ('b -> value) -> ('c -> value) ->
-  ('a * 'b * 'c) -> value
+  ('a * 'b * 'c) -> t
 (** Build a triple. *)
 
 (** {2 Accessors} *)
