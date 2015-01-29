@@ -107,7 +107,7 @@ let string_of_error error =
   Jsonm.pp_error Format.str_formatter error;
   Format.flush_str_formatter ()
 
-let from_src src: t =
+let from_src src =
   match json_of_src src with
   | `JSON t      -> t
   | `Error (_,e) -> parse_error `Null "JSON.of_buffer %s" (string_of_error e)

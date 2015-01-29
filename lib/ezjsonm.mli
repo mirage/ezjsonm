@@ -45,7 +45,7 @@ type t =
 val value: t -> value
 (** Cast a JSON well-formed document into a JSON fragment. *)
 
-val wrap: value -> t
+val wrap: value -> [> t]
 (** [wrap v] wraps the value [v] into a JSON array. To use when it is
     not possible to statically know that [v] is a value JSON value. *)
 
@@ -55,13 +55,13 @@ val unwrap: t -> value
 
 (** {2 Reading JSON documents} *)
 
-val from_channel: in_channel -> t
+val from_channel: in_channel -> [> t]
 (** Read a JSON document from an input channel. *)
 
-val from_string: string -> t
+val from_string: string -> [> t]
 (** Read a JSON document from a string. *)
 
-val from_src: Jsonm.src -> t
+val from_src: Jsonm.src -> [> t]
 (** Low-level function to read directly from a [Jsonm] source. *)
 
 (** {2 Writing JSON documents} *)
@@ -90,7 +90,7 @@ val bool: bool -> value
 val string: string -> value
 (** Same as [`String s]. *)
 
-val strings: string list -> t
+val strings: string list -> [> t]
 (** Same as [`A [`String s1; ..; `String sn]]. *)
 
 val int: int -> value
@@ -105,20 +105,20 @@ val int64: int64 -> value
 val float: float -> value
 (** Some as [`Float f]. *)
 
-val list: ('a -> value) -> 'a list -> t
+val list: ('a -> value) -> 'a list -> [> t]
 (** Build a list of values. *)
 
 val option: ('a -> value) -> 'a option -> value
 (** Either [`Null] or a JSON value. *)
 
-val dict: (string * value) list -> t
+val dict: (string * value) list -> [> t]
 (** Build a dictionnary. *)
 
-val pair: ('a -> value) -> ('b -> value) -> ('a * 'b) -> t
+val pair: ('a -> value) -> ('b -> value) -> ('a * 'b) -> [> t]
 (** Build a pair. *)
 
 val triple: ('a -> value) -> ('b -> value) -> ('c -> value) ->
-  ('a * 'b * 'c) -> t
+  ('a * 'b * 'c) -> [> t]
 (** Build a triple. *)
 
 (** {2 Accessors} *)
