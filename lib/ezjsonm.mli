@@ -46,7 +46,7 @@ val value: t -> value
 (** Cast a JSON well-formed document into a JSON fragment. *)
 
 val wrap: value -> t
-(** [wrap v] wraps the value [v] into a JSON object. To use when it is
+(** [wrap v] wraps the value [v] into a JSON array. To use when it is
     not possible to statically know that [v] is a value JSON value. *)
 
 val unwrap: t -> value
