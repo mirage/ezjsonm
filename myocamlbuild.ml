@@ -622,3 +622,8 @@ let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 # 623 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;
+
+let () =
+  flag ["ocaml"; "doc"] (A"-colorize-code");
+  flag ["ocaml"; "doc"] (A"-short-functors");
+  flag ["ocaml"; "doc"] (A"-short-paths")

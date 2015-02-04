@@ -1,3 +1,7 @@
+0.4.1 (2014-02-02)
+* Use polymorphic variants subtyping to avoid manual coercion in the
+  API (#11, patch from Julien Sagot)
+
 0.4.0 (2014-12-17)
 * Clean-up the typed representation of serializable JSON
     (#5, report and patch from Rudi Grinberg)
