@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Ezjsonm" rel="Chapter" href="Ezjsonm.html"><link title="Basic types" rel="Section" href="#2_Basictypes">
+<link title="Reading JSON documents" rel="Section" href="#2_ReadingJSONdocuments">
+<link title="Writing JSON documents" rel="Section" href="#2_WritingJSONdocuments">
+<link title="Constructors" rel="Section" href="#2_Constructors">
+<link title="Accessors" rel="Section" href="#2_Accessors">
+<link title="High-level functions" rel="Section" href="#2_Highlevelfunctions">
+<link title="Error handling" rel="Section" href="#2_Errorhandling">
+<title>Ezjsonm</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Ezjsonm.html">Ezjsonm</a></h1>
+
+<pre><span class="keyword">module</span> Ezjsonm: <code class="code"><span class="keyword">sig</span></code> <a href="Ezjsonm.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+An easy interface on top of the <code class="code"><span class="constructor">Jsonm</span></code> library.
+<p>
+
+    This version provides more convenient (but far less flexible)
+    input and output functions that go to and from <code class="code">string</code> values.
+    This avoids the need to write signal code, which is useful for
+    quick scripts that manipulate JSON.
+<p>
+
+    More advanced users should go straight to the <code class="code"><span class="constructor">Jsonm</span></code> library and
+    use it directly, rather than be saddled with the Ezjsonm interface
+    below.<br>
+</div>
+<hr width="100%">
+<br>
+<h2 id="2_Basictypes">Basic types</h2><br>
+
+<pre><span id="TYPEvalue"><span class="keyword">type</span> <code class="type"></code>value</span> = <code class="type">[ `A of value list<br>       | `Bool of bool<br>       | `Float of float<br>       | `Null<br>       | `O of (string * value) list<br>       | `String of string ]</code> </pre>
+<div class="info ">
+JSON fragments.<br>
+</div>
+
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = <code class="type">[ `A of <a href="Ezjsonm.html#TYPEvalue">value</a> list | `O of (string * <a href="Ezjsonm.html#TYPEvalue">value</a>) list ]</code> </pre>
+<div class="info ">
+Well-formed JSON documents.<br>
+</div>
+
+
+<pre><span id="VALvalue"><span class="keyword">val</span> value</span> : <code class="type"><a href="Ezjsonm.html#TYPEt">t</a> -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Cast a JSON well-formed document into a JSON fragment.<br>
+</div>
+
+<pre><span id="VALwrap"><span class="keyword">val</span> wrap</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+<code class="code">wrap v</code> wraps the value <code class="code">v</code> into a JSON array. To use when it is
+    not possible to statically know that <code class="code">v</code> is a value JSON value.<br>
+</div>
+
+<pre><span id="VALunwrap"><span class="keyword">val</span> unwrap</span> : <code class="type"><a href="Ezjsonm.html#TYPEt">t</a> -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+<code class="code">unwrap t</code> is the reverse of <code class="code">wrap</code>. It expects <code class="code">t</code> to be a
+    singleton JSON object and it return the unique element.<br>
+</div>
+<br>
+<h2 id="2_ReadingJSONdocuments">Reading JSON documents</h2><br>
+
+<pre><span id="VALfrom_channel"><span class="keyword">val</span> from_channel</span> : <code class="type">Pervasives.in_channel -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Read a JSON document from an input channel.<br>
+</div>
+
+<pre><span id="VALfrom_string"><span class="keyword">val</span> from_string</span> : <code class="type">string -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Read a JSON document from a string.<br>
+</div>
+
+<pre><span id="VALfrom_src"><span class="keyword">val</span> from_src</span> : <code class="type">Jsonm.src -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Low-level function to read directly from a <code class="code"><span class="constructor">Jsonm</span></code> source.<br>
+</div>
+<br>
+<h2 id="2_WritingJSONdocuments">Writing JSON documents</h2><br>
+
+<pre><span id="VALto_channel"><span class="keyword">val</span> to_channel</span> : <code class="type">?minify:bool -> Pervasives.out_channel -> <a href="Ezjsonm.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Write a JSON document to an output channel.<br>
+</div>
+
+<pre><span id="VALto_buffer"><span class="keyword">val</span> to_buffer</span> : <code class="type">?minify:bool -> Buffer.t -> <a href="Ezjsonm.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Write a JSON document to a buffer.<br>
+</div>
+
+<pre><span id="VALto_string"><span class="keyword">val</span> to_string</span> : <code class="type">?minify:bool -> <a href="Ezjsonm.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+Write a JSON document to a string. This goes via an intermediate
+    buffer and so may be slow on large documents.<br>
+</div>
+
+<pre><span id="VALto_dst"><span class="keyword">val</span> to_dst</span> : <code class="type">?minify:bool -> Jsonm.dst -> <a href="Ezjsonm.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Low-level function to write directly to a <code class="code"><span class="constructor">Jsonm</span></code> destination.<br>
+</div>
+<br>
+<h2 id="2_Constructors">Constructors</h2><br>
+
+<pre><span id="VALunit"><span class="keyword">val</span> unit</span> : <code class="type">unit -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">Null</span></code>.<br>
+</div>
+
+<pre><span id="VALbool"><span class="keyword">val</span> bool</span> : <code class="type">bool -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">Bool</span> b</code>.<br>
+</div>
+
+<pre><span id="VALstring"><span class="keyword">val</span> string</span> : <code class="type">string -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">String</span> s</code>.<br>
+</div>
+
+<pre><span id="VALstrings"><span class="keyword">val</span> strings</span> : <code class="type">string list -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">A</span> [<span class="keywordsign">`</span><span class="constructor">String</span> s1; ..; <span class="keywordsign">`</span><span class="constructor">String</span> sn]</code>.<br>
+</div>
+
+<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">int -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">Float</span> (float_of_int i)</code>.<br>
+</div>
+
+<pre><span id="VALint32"><span class="keyword">val</span> int32</span> : <code class="type">int32 -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">Float</span> (<span class="constructor">Int32</span>.to_float i)</code><br>
+</div>
+
+<pre><span id="VALint64"><span class="keyword">val</span> int64</span> : <code class="type">int64 -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Same as <code class="code"><span class="keywordsign">`</span><span class="constructor">Float</span> (<span class="constructor">Int64</span>.to_float i)</code><br>
+</div>
+
+<pre><span id="VALfloat"><span class="keyword">val</span> float</span> : <code class="type">float -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Some as <code class="code"><span class="keywordsign">`</span><span class="constructor">Float</span> f</code>.<br>
+</div>
+
+<pre><span id="VALlist"><span class="keyword">val</span> list</span> : <code class="type">('a -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -> 'a list -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Build a list of values.<br>
+</div>
+
+<pre><span id="VALoption"><span class="keyword">val</span> option</span> : <code class="type">('a -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -> 'a option -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Either <code class="code"><span class="keywordsign">`</span><span class="constructor">Null</span></code> or a JSON value.<br>
+</div>
+
+<pre><span id="VALdict"><span class="keyword">val</span> dict</span> : <code class="type">(string * <a href="Ezjsonm.html#TYPEvalue">value</a>) list -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Build a dictionnary.<br>
+</div>
+
+<pre><span id="VALpair"><span class="keyword">val</span> pair</span> : <code class="type">('a -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -> ('b -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -> 'a * 'b -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Build a pair.<br>
+</div>
+
+<pre><span id="VALtriple"><span class="keyword">val</span> triple</span> : <code class="type">('a -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -><br>       ('b -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -><br>       ('c -> <a href="Ezjsonm.html#TYPEvalue">value</a>) -> 'a * 'b * 'c -> [> <a href="Ezjsonm.html#TYPEt">t</a> ]</code></pre><div class="info ">
+Build a triple.<br>
+</div>
+<br>
+<h2 id="2_Accessors">Accessors</h2><br>
+
+<pre><span id="EXCEPTIONParse_error"><span class="keyword">exception</span> Parse_error</span> <span class="keyword">of</span> <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> * string</code></pre>
+<div class="info ">
+All the following accessor functions expect the provided JSON
+    document to be of a certain kind. In case this is not the case,
+    <code class="code"><span class="constructor">Parse_error</span></code> is raised.<br>
+</div>
+
+<pre><span id="VALget_unit"><span class="keyword">val</span> get_unit</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> unit</code></pre><div class="info ">
+Check that the JSON document is <code class="code"><span class="keywordsign">`</span><span class="constructor">Null</span></code>.<br>
+</div>
+
+<pre><span id="VALget_bool"><span class="keyword">val</span> get_bool</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> bool</code></pre><div class="info ">
+Extract <code class="code">b</code> from <code class="code"><span class="keywordsign">`</span><span class="constructor">Bool</span> b</code>.<br>
+</div>
+
+<pre><span id="VALget_string"><span class="keyword">val</span> get_string</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string</code></pre><div class="info ">
+Extract <code class="code">s</code> from <code class="code"><span class="keywordsign">`</span><span class="constructor">String</span> s</code>.<br>
+</div>
+
+<pre><span id="VALget_strings"><span class="keyword">val</span> get_strings</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string list</code></pre><div class="info ">
+Extract <code class="code">s1;..;sn</code> from <code class="code"><span class="keywordsign">`</span><span class="constructor">A</span> [<span class="keywordsign">`</span><span class="constructor">String</span> s1; ...; <span class="keywordsign">`</span><span class="constructor">String</span> sn]</code>.<br>
+</div>
+
+<pre><span id="VALget_int"><span class="keyword">val</span> get_int</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> int</code></pre><div class="info ">
+Extract an integer.<br>
+</div>
+
+<pre><span id="VALget_int32"><span class="keyword">val</span> get_int32</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> int32</code></pre><div class="info ">
+Extract a 32-bits integer.<br>
+</div>
+
+<pre><span id="VALget_int64"><span class="keyword">val</span> get_int64</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> int64</code></pre><div class="info ">
+Extract a 64-bits integer.<br>
+</div>
+
+<pre><span id="VALget_float"><span class="keyword">val</span> get_float</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> float</code></pre><div class="info ">
+Extract a float.<br>
+</div>
+
+<pre><span id="VALget_list"><span class="keyword">val</span> get_list</span> : <code class="type">(<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a) -> <a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a list</code></pre><div class="info ">
+Extract elements from a JSON array.<br>
+</div>
+
+<pre><span id="VALget_option"><span class="keyword">val</span> get_option</span> : <code class="type">(<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a) -> <a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a option</code></pre><div class="info ">
+Extract an optional document.<br>
+</div>
+
+<pre><span id="VALget_dict"><span class="keyword">val</span> get_dict</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> (string * <a href="Ezjsonm.html#TYPEvalue">value</a>) list</code></pre><div class="info ">
+Extract the elements from a dictionnary document.<br>
+</div>
+
+<pre><span id="VALget_pair"><span class="keyword">val</span> get_pair</span> : <code class="type">(<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a) -> (<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'b) -> <a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a * 'b</code></pre><div class="info ">
+Extract the pair.<br>
+</div>
+
+<pre><span id="VALget_triple"><span class="keyword">val</span> get_triple</span> : <code class="type">(<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a) -><br>       (<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'b) -><br>       (<a href="Ezjsonm.html#TYPEvalue">value</a> -> 'c) -> <a href="Ezjsonm.html#TYPEvalue">value</a> -> 'a * 'b * 'c</code></pre><div class="info ">
+Extract the triple.<br>
+</div>
+<br>
+<h2 id="2_Highlevelfunctions">High-level functions</h2><br>
+
+<pre><span id="VALmem"><span class="keyword">val</span> mem</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string list -> bool</code></pre><div class="info ">
+Is the given path valid if the provided JSON document.<br>
+</div>
+
+<pre><span id="VALfind"><span class="keyword">val</span> find</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string list -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Find the sub-document adressed by the given path. Raise
+    <code class="code"><span class="constructor">Not_found</span></code> if the path is invalid.<br>
+</div>
+
+<pre><span id="VALupdate"><span class="keyword">val</span> update</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string list -> <a href="Ezjsonm.html#TYPEvalue">value</a> option -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Update the sub-document addressed by the given path. If the
+    provided value is <code class="code"><span class="constructor">None</span></code>, then removes the sub-document.<br>
+</div>
+
+<pre><span id="VALmap"><span class="keyword">val</span> map</span> : <code class="type">(<a href="Ezjsonm.html#TYPEvalue">value</a> -> <a href="Ezjsonm.html#TYPEvalue">value</a> option) -><br>       <a href="Ezjsonm.html#TYPEvalue">value</a> -> string list -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Apply a given function to a subdocument.<br>
+</div>
+
+<pre><span id="VALencode_string"><span class="keyword">val</span> encode_string</span> : <code class="type">string -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Convert a (possibly non-valid UTF8) string to a JSON object.<br>
+</div>
+
+<pre><span id="VALdecode_string"><span class="keyword">val</span> decode_string</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string option</code></pre><div class="info ">
+Convert a JSON object to a (possibly non-valid UTF8)
+    string. Return <code class="code"><span class="constructor">None</span></code> if the JSON object is not a valid string.<br>
+</div>
+
+<pre><span id="VALdecode_string_exn"><span class="keyword">val</span> decode_string_exn</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> string</code></pre><div class="info ">
+Convert a JSON object to a (possibly non-valid UTF8) string.<br>
+</div>
+
+<pre><span id="VALto_sexp"><span class="keyword">val</span> to_sexp</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> Sexplib.Type.t</code></pre><div class="info ">
+Convert a JSON object to an S-expression.<br>
+</div>
+
+<pre><span id="VALof_sexp"><span class="keyword">val</span> of_sexp</span> : <code class="type">Sexplib.Type.t -> <a href="Ezjsonm.html#TYPEvalue">value</a></code></pre><div class="info ">
+Convert an S-expression to a JSON object.<br>
+</div>
+<br>
+<h2 id="2_Errorhandling">Error handling</h2><br>
+
+<pre><span id="EXCEPTIONParse_error"><span class="keyword">exception</span> Parse_error</span> <span class="keyword">of</span> <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> * string</code></pre>
+
+<pre><span id="VALparse_error"><span class="keyword">val</span> parse_error</span> : <code class="type"><a href="Ezjsonm.html#TYPEvalue">value</a> -> ('a, unit, string, 'b) Pervasives.format4 -> 'a</code></pre><div class="info ">
+Raise <code class="code"><span class="constructor">Parse_error</span></code><br>
+</div>
+</body></html>
