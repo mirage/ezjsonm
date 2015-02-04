@@ -42,7 +42,24 @@ configure:
 
 VERSION = $(shell grep 'Version:' _oasis | sed 's/Version: *//')
 NAME    = $(shell grep 'Name:' _oasis    | sed 's/Name: *//')
-ARCHIVE = https://github.com/mirage/ezjsonm/archive/
+ARCHIVE = https://github.com/mirage/$(NAME)/archive/
+
+init-doc:
+	cd doc/html/ && (\
+		git init; \
+		git remote add origin git@github.com:mirage/$(NAME).git; \
+		git checkout -b gh-pages; \
+		git add style.css; \
+		git commit -a -m "Initial commit"; \
+		git push origin gh-pages)
+
+update-doc: doc/html/.git
+	cd doc/html && git checkout gh-pages
+	rm -f doc/html/*.html
+	cp $(NAME).docdir/*.html doc/html/
+	cd doc/html && git add *.html
+	cd doc/html && git commit -a -m "Doc updates"
+	cd doc/html && git push origin gh-pages
 
 release:
 	git tag -a $(VERSION) -m "Version $(VERSION)."
