@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 62fbc8ecb1b5356e5e1700296baa2ad5)
+# DO NOT EDIT (digest: 88e117321ea21e2394d77b14e673252a)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -24,4 +24,17 @@ true: annot, bin_annot
 <lib/*.ml{,i,y}>: pkg_sexplib
 <lib/*.ml{,i,y}>: pkg_uutf
 <lib/*.ml{,i,y}>: use_ezjsonm
+# Executable test
+"test/test.byte": pkg_hex
+"test/test.byte": pkg_jsonm
+"test/test.byte": pkg_oUnit
+"test/test.byte": pkg_sexplib
+"test/test.byte": pkg_uutf
+"test/test.byte": use_ezjsonm
+<test/*.ml{,i,y}>: pkg_hex
+<test/*.ml{,i,y}>: pkg_jsonm
+<test/*.ml{,i,y}>: pkg_oUnit
+<test/*.ml{,i,y}>: pkg_sexplib
+<test/*.ml{,i,y}>: pkg_uutf
+<test/*.ml{,i,y}>: use_ezjsonm
 # OASIS_STOP

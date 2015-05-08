@@ -26,6 +26,16 @@ Library "ezjsonm-lwt"
   Modules: Ezjsonm_lwt
   BuildDepends: ezjsonm, lwt
 
+Executable test
+  Install: false
+  Path: test
+  MainIs: test.ml
+  BuildDepends: ezjsonm, oUnit
+
+Test "main"
+ Type: Custom (0.3)
+ Command: $test
+
 Document ezjsonm
   Title:                Ezjsonm docs
   Type:                 ocamlbuild (0.3)
