@@ -27,6 +27,7 @@ Library "ezjsonm-lwt"
   BuildDepends: ezjsonm, lwt
 
 Executable test
+  Build$: flag(tests)
   Install: false
   Path: test
   MainIs: test.ml

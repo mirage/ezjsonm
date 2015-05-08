@@ -11,13 +11,17 @@ tags: [
 ]
 
 build: [
-  ["./configure" "--prefix" prefix "--%{lwt:enable}%-lwt"]
+  ["./configure" "--prefix" prefix
+    "--%{lwt:enable}%-lwt"
+    "--%{ounit:enable}%-tests"]
   [make]
 ]
+build-test: [make "test"]
 install: [make "install"]
 remove: ["ocamlfind" "remove" "ezjsonm"]
 depends: [
   "ocamlfind" {build}
+  "ounit" {test}
   "jsonm" {>= "0.9.1"}
   "sexplib"
   "hex"
