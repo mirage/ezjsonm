@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: df8034ecd81196e4d202aee70657eeed) *)
+(* DO NOT EDIT (digest: 9c54a67fcb5294cf7a09d7eea7d314c7) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -611,7 +611,7 @@ let package_default =
        [("ezjsonm", ["lib"], []); ("ezjsonm-lwt", ["lib"], [])];
      lib_c = [];
      flags = [];
-     includes = [("test", ["lib"])]
+     includes = [("lib_test", ["lib"])]
   }
   ;;
 

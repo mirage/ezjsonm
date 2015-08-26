@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        ezjsonm
-Version:     0.4.1
+Version:     0.4.2
 Synopsis:    An easy interface on top of the Jsonm library
 Authors:     Thomas Gazagnaire
 License:     ISC
@@ -27,11 +27,11 @@ Library "ezjsonm-lwt"
   BuildDepends: ezjsonm, lwt
 
 Executable test
+  Path: lib_test
   Build$: flag(tests)
   Install: false
-  Path: test
   MainIs: test.ml
-  BuildDepends: ezjsonm, oUnit
+  BuildDepends: alcotest, ezjsonm, ezjsonm.lwt, lwt.unix
 
 Test "main"
  Type: Custom (0.3)
