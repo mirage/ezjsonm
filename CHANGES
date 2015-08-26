@@ -1,3 +1,8 @@
+0.4.2 (2015-08-26)
+* Add unit-tests (#2)
+* Fix the parsing of JSON streams. Normal JSON arrays should be valid
+  streams (#16)
+
 0.4.1 (2014-02-02)
 * Use polymorphic variants subtyping to avoid manual coercion in the
   API (#11, patch from Julien Sagot)
