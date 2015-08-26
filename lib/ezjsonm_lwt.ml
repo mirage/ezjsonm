@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Lwt
+open Lwt.Infix
 open Ezjsonm
 
 exception Escape of ((int * int) * (int * int)) * Jsonm.error
@@ -22,12 +22,12 @@ exception Escape of ((int * int) * (int * int)) * Jsonm.error
 let from_stream (stream: string Lwt_stream.t): value Lwt_stream.t =
   let d = Jsonm.decoder `Manual in
   let rec dec () = match Jsonm.decode d with
-    | `Lexeme l -> return l
-    | `Error e  -> fail (Escape (Jsonm.decoded_range d, e))
+    | `Lexeme l -> Lwt.return l
+    | `Error e  -> Lwt.fail (Escape (Jsonm.decoded_range d, e))
     | `End      -> assert false
     | `Await    ->
       Lwt_stream.get stream >>= function
-      | None    -> fail (Escape (Jsonm.decoded_range d, (`Expected `Value)))
+      | None    -> Lwt.fail (Escape (Jsonm.decoded_range d, (`Expected `Value)))
       | Some str ->
         Jsonm.Manual.src d str 0 (String.length str);
         dec ()
@@ -40,6 +40,9 @@ let from_stream (stream: string Lwt_stream.t): value Lwt_stream.t =
     | `String _
     | `Float _ as v -> k v
     | _ -> assert false
+  and value_o v k = match v with
+    | `Ae -> k None
+    | _   -> value v (fun v -> k (Some v))
   and arr vs k =
     dec () >>= function
     | `Ae -> k (`A (List.rev vs))
@@ -52,18 +55,12 @@ let from_stream (stream: string Lwt_stream.t): value Lwt_stream.t =
   in
   let open_stream () =
     dec () >>= function
-    | `As -> return_unit
-    | l   -> fail (Escape (Jsonm.decoded_range d, `Expected (`Aval true)))
+    | `As -> Lwt.return_unit
+    | l   -> Lwt.fail (Escape (Jsonm.decoded_range d, `Expected (`Aval true)))
   in
   let get () =
-    catch
-      (fun () ->
-         dec () >>= fun l ->
-         value l return >>= fun json ->
-         return (Some json))
-      (function
-        | Escape _ -> return_none
-        | e        -> fail e)
+    dec () >>= fun v ->
+    value_o v Lwt.return
   in
   let opened = ref false in
   let open_and_get () =
@@ -72,5 +69,6 @@ let from_stream (stream: string Lwt_stream.t): value Lwt_stream.t =
       opened := true;
       get ()
     ) else
-      get () in
+      get ()
+  in
   Lwt_stream.from open_and_get
