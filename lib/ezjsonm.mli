@@ -202,7 +202,5 @@ val of_sexp: Sexplib.Type.t -> value
 
 (** {2 Error handling} *)
 
-exception Parse_error of value * string
-
 val parse_error: value -> ('a, unit, string, 'b) format4 -> 'a
 (** Raise [Parse_error] *)
