@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: ef24b946f52da0ad61d9f213bd8d56bc)
-version = "0.4.2"
+# DO NOT EDIT (digest: 6c2a8270b46c17603ff0d2597c489f80)
+version = "0.4.3"
 description = "An easy interface on top of the Jsonm library"
 requires = "jsonm hex uutf sexplib"
 archive(byte) = "ezjsonm.cma"
@@ -9,7 +9,7 @@ archive(native) = "ezjsonm.cmxa"
 archive(native, plugin) = "ezjsonm.cmxs"
 exists_if = "ezjsonm.cma"
 package "lwt" (
- version = "0.4.2"
+ version = "0.4.3"
  description = "An easy interface on top of the Jsonm library"
  requires = "ezjsonm lwt"
  archive(byte) = "ezjsonm-lwt.cma"
