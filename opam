@@ -29,3 +29,4 @@ depends: [
   "hex"
 ]
 depopts: ["lwt"]
+conflicts: ["lwt" {<"2.5"}]
