@@ -148,11 +148,11 @@ let get_int = function
 
 let get_int32 = function
   | `Float f -> Int32.of_float f
-  | j        -> parse_error j "Ezjsonm.get_int"
+  | j        -> parse_error j "Ezjsonm.get_int32"
 
 let get_int64 = function
   | `Float f -> Int64.of_float f
-  | j        -> parse_error j "Ezjsonm.get_int"
+  | j        -> parse_error j "Ezjsonm.get_int64"
 
 (* flooat *)
 let float f = `Float f
