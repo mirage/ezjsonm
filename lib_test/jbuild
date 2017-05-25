@@ -1,0 +1,8 @@
+(executables
+ ((names (test))
+  (libraries (alcotest ezjsonm ezjsonm.lwt lwt.unix))
+))
+(alias
+ ((name    runtest)
+  (deps    (test.exe))
+  (action  (run ${<}))))
