@@ -282,6 +282,8 @@ let rec of_sexp = function
   | Sexplib.Type.Atom x -> encode_string x
   | Sexplib.Type.List l -> list of_sexp l
 
+let value_of_sexp = of_sexp
+
 let rec to_sexp json =
   match decode_string json with
   | Some s -> Sexplib.Type.Atom s
@@ -289,3 +291,5 @@ let rec to_sexp json =
     match json with
     | `A l -> Sexplib.Type.List (List.map to_sexp l)
     | _    -> parse_error json "Ezjsonm.to_sexp"
+
+let sexp_of_value = to_sexp

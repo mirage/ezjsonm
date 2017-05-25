@@ -1,5 +1,10 @@
 open Alcotest
 
+(* Check we're compatible with sexplib *)
+type test = {
+  foo: Ezjsonm.value;
+} [@@deriving sexp]
+
 let json_t: Ezjsonm.t Alcotest.testable =
   (module struct
     type t = Ezjsonm.t

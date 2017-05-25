@@ -197,8 +197,14 @@ val decode_string_exn: value -> string
 val to_sexp: value -> Sexplib.Type.t
 (** Convert a JSON object to an S-expression. *)
 
+val sexp_of_value: value -> Sexplib.Type.t
+(** An alias of [to_sexp] *)
+
 val of_sexp: Sexplib.Type.t -> value
 (** Convert an S-expression to a JSON object. *)
+
+val value_of_sexp: Sexplib.Type.t -> value
+(** AN alias of [of_sexp] *)
 
 (** {2 Error handling} *)
 

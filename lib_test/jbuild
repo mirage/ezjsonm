@@ -1,6 +1,7 @@
 (executables
  ((names (test))
-  (libraries (alcotest ezjsonm ezjsonm.lwt lwt.unix))
+  (libraries (alcotest ezjsonm ezjsonm-lwt lwt.unix))
+  (preprocess (pps (ppx_sexp_conv)))
 ))
 (alias
  ((name    runtest)
