@@ -5,28 +5,22 @@ license:      "ISC"
 homepage:     "https://github.com/mirage/ezjsonm"
 bug-reports:  "https://github.com/mirage/ezjsonm/issues"
 dev-repo:     "https://github.com/mirage/ezjsonm.git"
+doc:          "https://mirage.github.io/ezjsonm"
 tags: [
   "org:mirage"
   "org:ocamllabs"
 ]
 
 build: [
-  ["./configure" "--prefix" prefix "--%{lwt:enable}%-lwt"]
-  [make]
+  [ "jbuilder" "subst"] {pinned}
+  [ "jbuilder" "build" "-p" name "-j" jobs ]
 ]
-build-test: [
-  ["./configure" "--prefix" prefix "--enable-tests"]
-  [make "test"]
-]
-install: [make "install"]
-remove: ["ocamlfind" "remove" "ezjsonm"]
+
 depends: [
   "ocamlfind" {build}
-  "alcotest" {test & >= "0.4.0"}
-  "lwt"      {test}
-  "jsonm" {>= "0.9.1"}
+  "jbuilder"  {build & >="1.0+beta9"}
+  "alcotest"  {test & >= "0.4.0"}
+  "jsonm"     {>= "0.9.1"}
   "sexplib"
   "hex"
 ]
-depopts: ["lwt"]
-conflicts: ["lwt" {<"2.5"}]
