@@ -282,6 +282,13 @@ let rec of_sexp = function
   | Sexplib.Type.Atom x -> encode_string x
   | Sexplib.Type.List l -> list of_sexp l
 
+let value_of_sexp = of_sexp
+
+let t_of_sexp s = match value_of_sexp s with
+  | `A x -> `A x
+  | `O x -> `O x
+  | _ -> failwith "Ezjsonm: t_of_sexp encountered a value (fragment) rather than a t"
+
 let rec to_sexp json =
   match decode_string json with
   | Some s -> Sexplib.Type.Atom s
@@ -289,3 +296,7 @@ let rec to_sexp json =
     match json with
     | `A l -> Sexplib.Type.List (List.map to_sexp l)
     | _    -> parse_error json "Ezjsonm.to_sexp"
+
+let sexp_of_value = to_sexp
+
+let sexp_of_t t = sexp_of_value @@ value t

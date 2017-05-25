@@ -1,5 +1,11 @@
 open Alcotest
 
+(* Check we're compatible with sexplib *)
+type test = {
+  foo: Ezjsonm.value;
+  bar: Ezjsonm.t;
+} [@@deriving sexp]
+
 let json_t: Ezjsonm.t Alcotest.testable =
   (module struct
     type t = Ezjsonm.t
@@ -84,6 +90,18 @@ let tests t ts () = List.iter (test t) ts
 let stream0 =
   random_list 42 (fun i -> Ezjsonm.(string @@ random_string i))
 
+let test_sexp_of_t () =
+  let t = `A [ `String "hello" ] in
+  let open Ezjsonm in
+  let t'' = t_of_sexp @@ sexp_of_t t in
+  Alcotest.(check json_t) "sexp_of_t" t t''
+
+let test_sexp_of_value () =
+  let v = `A [ `String "hello" ] in
+  let open Ezjsonm in
+  let v'' = value_of_sexp @@ sexp_of_value v in
+  Alcotest.(check json_v) "sexp_of_value" v v''
+
 let () =
   let suite k (t, ts) = k, ["test", `Quick, tests t ts] in
   Alcotest.run "ezjsonm" [
@@ -91,5 +109,9 @@ let () =
     suite "list"   list;
     "stream", [
       "stream0", `Quick, test_stream stream0;
-    ]
+    ];
+    "sexp", [
+      "sexp_of_t", `Quick, test_sexp_of_t;
+      "sexp_of_value", `Quick, test_sexp_of_value;
+    ];
   ]
