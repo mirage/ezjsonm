@@ -252,14 +252,16 @@ let map f t path =
 let update t path v =
   map (fun _ -> v) t path
 
+exception Not_utf8
+
 let is_valid_utf8 str =
   try
     Uutf.String.fold_utf_8 (fun _ _ -> function
-        | `Malformed _ -> raise (Failure "utf8")
+        | `Malformed _ -> raise Not_utf8
         | _ -> ()
       ) () str;
     true
-  with Failure "utf8" -> false
+  with Not_utf8 -> false
 
 let encode_string str =
   if is_valid_utf8 str
