@@ -57,7 +57,7 @@ let from_stream (stream: string Lwt_stream.t): value Lwt_stream.t =
   let open_stream () =
     dec () >>= function
     | `As -> Lwt.return_unit
-    | l   -> Lwt.fail (Escape (Jsonm.decoded_range d, `Expected (`Aval true)))
+    | _   -> Lwt.fail (Escape (Jsonm.decoded_range d, `Expected (`Aval true)))
   in
   let get () =
     dec () >>= fun v ->

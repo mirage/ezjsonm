@@ -244,7 +244,7 @@ let map f t path =
     | h::tl ->
       match t with
       | `O d -> Some (`O (map_dict (fun t -> aux t tl) d h))
-      | j    -> None in
+      | _    -> None in
   match aux t path with
   | None   -> raise Not_found
   | Some j -> j
@@ -273,7 +273,7 @@ let encode_string str =
 let decode_string = function
   | `String str               -> Some str
   | `O [ "hex", `String str ] -> Some (Hex.to_string (`Hex str))
-  | j                         -> None
+  | _                         -> None
 
 let decode_string_exn j =
   match decode_string j with

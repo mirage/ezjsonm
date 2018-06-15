@@ -1,5 +1,3 @@
-open Alcotest
-
 (* Check we're compatible with sexplib *)
 type test = {
   foo: Ezjsonm.value;
