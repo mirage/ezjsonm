@@ -29,7 +29,7 @@ let random_string len =
   for i = 0 to Bytes.length s - 1 do
     Bytes.set s i @@ Char.chr (random_int 127)
   done;
-  s
+  Bytes.to_string s
 
 let random_list len gen =
   Array.to_list (Array.init len gen)
