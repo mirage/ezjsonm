@@ -1,3 +1,8 @@
+## v1.0.0 (2019-02-02)
+* Upgrade opam metadata to 2.0 format (@avsm)
+* Update build from jbuilder to dune (@avsm)
+* Support dune-release (@avsm)
+
 ## 0.5.0 (2017-05-25)
 * Split into 2 toplevel packages: ezjsonm and ezjsonm-lwt
 * Build with jbuilder
