@@ -1,25 +1,31 @@
-opam-version: "1.2"
-maintainer:   "thomas@gazagnaire.org"
-authors:      "Thomas Gazagnaire"
-license:      "ISC"
-homepage:     "https://github.com/mirage/ezjsonm"
-bug-reports:  "https://github.com/mirage/ezjsonm/issues"
-dev-repo:     "https://github.com/mirage/ezjsonm.git"
-doc:          "https://mirage.github.io/ezjsonm"
-tags: [
-  "org:mirage"
-  "org:ocamllabs"
-]
-
-build: [
-  [ "jbuilder" "subst"] {pinned}
-  [ "jbuilder" "build" "-p" name "-j" jobs ]
-]
-
+opam-version: "2.0"
+maintainer: "thomas@gazagnaire.org"
+authors: "Thomas Gazagnaire"
+license: "ISC"
+tags: ["org:mirage" "org:ocamllabs"]
+homepage: "https://github.com/mirage/ezjsonm"
+doc: "https://mirage.github.io/ezjsonm/"
+bug-reports: "https://github.com/mirage/ezjsonm/issues"
 depends: [
-  "jbuilder"  {build & >="1.0+beta9"}
-  "alcotest"  {test & >= "0.4.0"}
-  "jsonm"     {>= "0.9.1"}
+  "ocaml"
+  "dune" {build & >= "1.0"}
+  "alcotest" {with-test & >= "0.4.0"}
+  "jsonm" {>= "0.9.1"}
   "sexplib"
   "hex"
 ]
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+dev-repo: "git+https://github.com/mirage/ezjsonm.git"
+synopsis: "Simple interface on top of the Jsonm JSON library"
+description: """
+Ezjsonm provides more convenient (but far less flexible)
+input and output functions that go to and from `string` values.
+This avoids the need to write signal code, which is useful for
+quick scripts that manipulate JSON.
+
+More advanced users should go straight to the Jsonm library and
+use it directly, rather than be saddled with the Ezjsonm interface.
+"""
