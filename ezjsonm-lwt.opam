@@ -11,6 +11,7 @@ depends: [
   "ezjsonm"
   "dune" {build & >= "1.0"}
   "alcotest" {with-test & >= "0.4.0"}
+  "ppx_sexp_conv" {with-test}
   "jsonm" {>= "0.9.1"}
   "sexplib"
   "hex"
