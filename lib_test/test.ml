@@ -15,7 +15,7 @@ let json_v: Ezjsonm.value Alcotest.testable =
   (module struct
     type t = Ezjsonm.value
     let equal = (=)
-    let pp ppf x = Format.pp_print_string ppf Ezjsonm.(to_string @@ wrap x)
+    let pp ppf x = Format.pp_print_string ppf Ezjsonm.(value_to_string x)
   end)
 
 let random_int i =
@@ -45,8 +45,8 @@ let test x t =
   let j =  x.to_json t in
   let t' = x.of_json j in
   Alcotest.(check x.test) "idempotent JSON conversion" t t';
-  let str = Ezjsonm.(to_string (wrap j)) in
-  let j' = Ezjsonm.(unwrap (from_string str)) in
+  let str = Ezjsonm.(value_to_string j) in
+  let j' = Ezjsonm.(value_from_string str) in
   let t' = x.of_json j' in
   Alcotest.(check x.test) "idempotent string conversion" t t'
 

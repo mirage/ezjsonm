@@ -55,10 +55,10 @@ let json_of_src src =
     | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
     | _       -> assert false
   in
-  try `JSON (value (dec ()) (function #t as x -> x | _  -> assert false))
+  try `JSON (value (dec ()) (fun x -> x))
   with Escape (r, e) -> `Error (r, e)
 
-let to_dst ?(minify=true) dst json =
+let value_to_dst ?(minify=true) dst json =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
   let rec t v k e = match v with
     | `A vs -> arr vs k e
@@ -77,18 +77,24 @@ let to_dst ?(minify=true) dst json =
   in
   let e = Jsonm.encoder ~minify dst in
   let finish e = ignore (Jsonm.encode e `End) in
-  t json finish e
+  value json finish e
 
-let to_buffer ?minify buf json =
-  to_dst ?minify (`Buffer buf) json
+let value_to_buffer ?minify buf json =
+  value_to_dst ?minify (`Buffer buf) json
 
-let to_string ?minify json =
+let to_buffer ?minify buf json = value_to_buffer ?minify buf (json :> value)
+
+let value_to_string ?minify json =
   let buf = Buffer.create 1024 in
-  to_buffer ?minify buf json;
+  value_to_buffer ?minify buf json;
   Buffer.contents buf
 
-let to_channel ?minify oc json =
-  to_dst ?minify (`Channel oc) json
+let to_string ?minify json = value_to_string ?minify (json :> value)
+
+let value_to_channel ?minify oc json =
+  value_to_dst ?minify (`Channel oc) json
+
+let to_channel ?minify oc json = value_to_channel ?minify oc (json :> value)
 
 exception Parse_error of value * string
 
@@ -107,14 +113,22 @@ let string_of_error error =
   Jsonm.pp_error Format.str_formatter error;
   Format.flush_str_formatter ()
 
-let from_src src =
+let value_from_src src =
   match json_of_src src with
   | `JSON t      -> t
   | `Error (_,e) -> parse_error `Null "JSON.of_buffer %s" (string_of_error e)
 
-let from_string str = from_src (`String str)
+let value_from_string str = value_from_src (`String str)
 
-let from_channel chan = from_src (`Channel chan)
+let value_from_channel chan = value_from_src (`Channel chan)
+
+let ensure_document: [> value] -> [> t] = function
+  | #t as t -> t
+  | _ -> assert false
+
+let from_string str = value_from_string str |> ensure_document
+
+let from_channel chan = value_from_channel chan |> ensure_document
 
 (* unit *)
 let unit () = `Null
@@ -170,7 +184,7 @@ let get_list fn = function
   | j     -> parse_error j "Ezjsonm.get_list"
 
 (* string lists *)
-let strings = list string
+let strings strings = list string strings
 
 let get_strings = get_list get_string
 

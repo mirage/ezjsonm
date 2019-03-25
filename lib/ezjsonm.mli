@@ -53,7 +53,7 @@ val unwrap: t -> value
 (** [unwrap t] is the reverse of [wrap]. It expects [t] to be a
     singleton JSON object and it return the unique element. *)
 
-(** {2 Reading JSON documents} *)
+(** {2 Reading JSON documents and values} *)
 
 val from_channel: in_channel -> [> t]
 (** Read a JSON document from an input channel. *)
@@ -61,10 +61,16 @@ val from_channel: in_channel -> [> t]
 val from_string: string -> [> t]
 (** Read a JSON document from a string. *)
 
-val from_src: Jsonm.src -> [> t]
+val value_from_channel: in_channel -> value
+(** Read a JSON value from an input channel. *)
+
+val value_from_string: string -> value
+(** Read a JSON value from a string. *)
+
+val value_from_src: Jsonm.src -> value
 (** Low-level function to read directly from a [Jsonm] source. *)
 
-(** {2 Writing JSON documents} *)
+(** {2 Writing JSON documents and values} *)
 
 val to_channel: ?minify:bool -> out_channel -> t -> unit
 (** Write a JSON document to an output channel. *)
@@ -76,7 +82,17 @@ val to_string: ?minify:bool -> t -> string
 (** Write a JSON document to a string. This goes via an intermediate
     buffer and so may be slow on large documents. *)
 
-val to_dst: ?minify:bool -> Jsonm.dst-> t -> unit
+val value_to_channel: ?minify:bool -> out_channel -> value -> unit
+(** Write a JSON value to an output channel. *)
+
+val value_to_buffer: ?minify:bool -> Buffer.t -> value -> unit
+(** Write a JSON value to a buffer. *)
+
+val value_to_string: ?minify:bool -> value -> string
+(** Write a JSON value to a string. This goes via an intermediate
+    buffer and so may be slow on large documents. *)
+
+val value_to_dst: ?minify:bool -> Jsonm.dst-> value -> unit
 (** Low-level function to write directly to a [Jsonm] destination. *)
 
 (** {2 Constructors} *)
