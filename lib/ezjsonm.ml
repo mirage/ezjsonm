@@ -31,6 +31,13 @@ let value: t -> value = fun t -> (t :> value)
 
 exception Escape of ((int * int) * (int * int)) * Jsonm.error
 
+module List = struct
+  include List
+
+  (* Tail-recursive List.map *)
+  let map f l = rev (rev_map f l)
+end
+
 let json_of_src src =
   let d = Jsonm.decoder src in
   let dec () = match Jsonm.decode d with
@@ -154,7 +161,7 @@ let get_int64 = function
   | `Float f -> Int64.of_float f
   | j        -> parse_error j "Ezjsonm.get_int64"
 
-(* flooat *)
+(* float *)
 let float f = `Float f
 
 let get_float = function
