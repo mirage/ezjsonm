@@ -1,3 +1,8 @@
+## v1.1.0 (2019-04-13)
+
+* Add `value_to_*` and `value_from_*` methods to support
+  RFC 7159/ECMA-404 (#34 @jaredly)
+
 ## v1.0.0 (2019-02-02)
 * Upgrade opam metadata to 2.0 format (@avsm)
 * Update build from jbuilder to dune (@avsm)
