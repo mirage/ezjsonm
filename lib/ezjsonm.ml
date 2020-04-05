@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Sexplib.Std
+
 (* From http://erratique.ch/software/jsonm/doc/Jsonm.html#datamodel *)
 type value =
   [ `Null
@@ -312,13 +314,13 @@ let t_of_sexp s = match value_of_sexp s with
   | `O x -> `O x
   | _ -> failwith "Ezjsonm: t_of_sexp encountered a value (fragment) rather than a t"
 
-let rec to_sexp json =
-  match decode_string json with
-  | Some s -> Sexplib.Type.Atom s
-  | None   ->
-    match json with
-    | `A l -> Sexplib.Type.List (List.map to_sexp l)
-    | _    -> parse_error json "Ezjsonm.to_sexp"
+let rec to_sexp = function
+  | `Bool b -> sexp_of_bool b
+  | `Null -> sexp_of_unit ()
+  | `Float x -> sexp_of_float x
+  | `String x -> sexp_of_string x
+  | `A xs -> sexp_of_list to_sexp xs
+  | `O xs -> sexp_of_list (Sexplib.Conv.sexp_of_pair sexp_of_string to_sexp) xs
 
 let sexp_of_value = to_sexp
 
