@@ -4,8 +4,8 @@
  (preprocess
   (pps ppx_sexp_conv)))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (package ezjsonm-lwt)
  (deps
   (:< test.exe))

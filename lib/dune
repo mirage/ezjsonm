@@ -1,7 +1,7 @@
 (library
  (name ezjsonm)
  (public_name ezjsonm)
- (libraries jsonm hex uutf sexplib)
+ (libraries jsonm hex uutf sexplib0)
  (modules Ezjsonm)
  (wrapped false))
 
