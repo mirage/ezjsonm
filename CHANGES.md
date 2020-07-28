@@ -1,3 +1,10 @@
+## v1.2.0 (2020-07-28)
+
+* Upgrade build rules to dune 2.0 (@avsm)
+* Depend on Sexplib0 instead of Sexplib since we only need
+  the type definition. This reduces the dependency cone of
+  Ezjsonm (and skips Base). (@avsm)
+
 ## v1.1.0 (2019-04-13)
 
 * Add `value_to_*` and `value_from_*` methods to support
