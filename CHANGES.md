@@ -1,5 +1,6 @@
 ## v1.2.0 (2020-07-28)
 
+* Add `find_opt` to provide an exception-less version of `find` (#39 @avsm)
 * Raise `Parse_error` instead of assert failure if the input
   to `from_string` is not a valid JSON array or object (#39 @avsm).
 * Upgrade build rules to dune 2.0 (#38 @avsm)

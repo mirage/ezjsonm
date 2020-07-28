@@ -243,6 +243,9 @@ let find t path =
     | _           -> raise Not_found in
   aux t path
 
+let find_opt t path =
+  try Some (find t path) with Not_found -> None
+
 let map_dict f dict label =
   let rec aux acc = function
     | []    ->
