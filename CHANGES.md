@@ -1,9 +1,11 @@
 ## v1.2.0 (2020-07-28)
 
-* Upgrade build rules to dune 2.0 (@avsm)
+* Raise `Parse_error` instead of assert failure if the input
+  to `from_string` is not a valid JSON array or object (#39 @avsm).
+* Upgrade build rules to dune 2.0 (#38 @avsm)
 * Depend on Sexplib0 instead of Sexplib since we only need
   the type definition. This reduces the dependency cone of
-  Ezjsonm (and skips Base). (@avsm)
+  Ezjsonm (and skips Base). (#38 @avsm)
 
 ## v1.1.0 (2019-04-13)
 

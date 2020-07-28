@@ -131,7 +131,7 @@ let value_from_channel chan = value_from_src (`Channel chan)
 
 let ensure_document: [> value] -> [> t] = function
   | #t as t -> t
-  | _ -> assert false
+  | t -> raise (Parse_error (t, "not a valid JSON array/object"))
 
 let from_string str = value_from_string str |> ensure_document
 
