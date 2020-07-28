@@ -131,7 +131,7 @@ let value_from_channel chan = value_from_src (`Channel chan)
 
 let ensure_document: [> value] -> [> t] = function
   | #t as t -> t
-  | _ -> assert false
+  | t -> raise (Parse_error (t, "not a valid JSON array/object"))
 
 let from_string str = value_from_string str |> ensure_document
 
@@ -242,6 +242,9 @@ let find t path =
     | h::tl, `O o -> aux (List.assoc h o) tl
     | _           -> raise Not_found in
   aux t path
+
+let find_opt t path =
+  try Some (find t path) with Not_found -> None
 
 let map_dict f dict label =
   let rec aux acc = function

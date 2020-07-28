@@ -187,11 +187,15 @@ val get_triple: (value -> 'a) -> (value -> 'b) -> (value -> 'c) ->
 (** {2 High-level functions} *)
 
 val mem: value -> string list -> bool
-(** Is the given path valid if the provided JSON document. *)
+(** [mem v path] is true if the given path is valid for the JSON document [v]. *)
 
 val find: value -> string list -> value
-(** Find the sub-document adressed by the given path. Raise
+(** Find the sub-document addressed by the given path. Raise
     [Not_found] if the path is invalid. *)
+
+val find_opt : value -> string list -> value option
+(** Find the sub-document addressed by the given path. Returns
+    [None] if the path is invalid. *)
 
 val update: value -> string list -> value option -> value
 (** Update the sub-document addressed by the given path. If the
