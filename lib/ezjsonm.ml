@@ -38,49 +38,36 @@ module List = struct
   let map f l = rev (rev_map f l)
 end
 
-let json_of_src src =
-  let d = Jsonm.decoder src in
-  let dec () = match Jsonm.decode d with
-    | `Lexeme l -> l
-    | `Error e  -> raise (Escape (Jsonm.decoded_range d, e))
-    | `End
-    | `Await    -> assert false
-  in
-  let rec value v k = match v with
-    | `Os -> obj [] k
-    | `As -> arr [] k
-    | `Null
-    | `Bool _
-    | `String _
-    | `Float _ as v -> k v
-    | _ -> assert false
-  and arr vs k = match dec () with
-    | `Ae -> k (`A (List.rev vs))
-    | v   -> value v (fun v -> arr (v :: vs) k)
-  and obj ms k = match dec () with
-    | `Oe     -> k (`O (List.rev ms))
-    | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
-    | _       -> assert false
-  in
-  try `JSON (value (dec ()) (fun x -> x))
-  with Escape (r, e) -> `Error (r, e)
-
-let value_to_dst ?(minify=true) dst json =
+let value_to_dst ?(minify = true) dst json =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
-  let rec t v k e = match v with
-    | `A vs -> arr vs k e
-    | `O ms -> obj ms k e
-  and value v k e = match v with
-    | `Null | `Bool _ | `Float _ | `String _ as v -> enc e v; k e
-    | #t as x -> t (x :> t) k e
-  and arr vs k e = enc e `As; arr_vs vs k e
-  and arr_vs vs k e = match vs with
-    | v :: vs' -> value v (arr_vs vs' k) e
-    | [] -> enc e `Ae; k e
-  and obj ms k e = enc e `Os; obj_ms ms k e
-  and obj_ms ms k e = match ms with
-    | (n, v) :: ms -> enc e (`Name n); value v (obj_ms ms k) e
-    | [] -> enc e `Oe; k e
+  let rec t v k e = match v with `A vs -> arr vs k e | `O ms -> obj ms k e
+  and value v k e =
+    match v with
+    | (`Null | `Bool _ | `Float _ | `String _) as v ->
+        enc e v ; k e
+    | #t as x ->
+        t (x :> t) k e
+  and arr vs k e =
+    enc e `As ;
+    arr_vs vs k e
+  and arr_vs vs k e =
+    match vs with
+    | v :: vs' ->
+        value v (arr_vs vs' k) e
+    | [] ->
+        enc e `Ae ;
+        k e
+  and obj ms k e =
+    enc e `Os ;
+    obj_ms ms k e
+  and obj_ms ms k e =
+    match ms with
+    | (n, v) :: ms ->
+        enc e (`Name n) ;
+        value v (obj_ms ms k) e
+    | [] ->
+        enc e `Oe ;
+        k e
   in
   let e = Jsonm.encoder ~minify dst in
   let finish e = ignore (Jsonm.encode e `End) in
@@ -102,6 +89,113 @@ let value_to_channel ?minify oc json =
   value_to_dst ?minify (`Channel oc) json
 
 let to_channel ?minify oc json = value_to_channel ?minify oc (json :> value)
+
+let json_of_src src =
+  let d = Jsonm.decoder src in
+  let dec () =
+    match Jsonm.decode d with
+    | `Lexeme l ->
+      l
+    | `Error e ->
+      raise (Escape (Jsonm.decoded_range d, e))
+    | `End | `Await ->
+      assert false
+  in
+  let pp_value ppf v = Format.fprintf ppf "%s" (value_to_string v) in
+  let module Stack_type = struct
+    type t =
+      [ `A of value List.t
+      | `Bool of bool
+      | `Float of float
+      | `In_array of value list
+      | `In_object of string option * (string * value) list
+      | `Null
+      | `O of (string * value) list
+      | `String of string ]
+  end in
+  let pp_stack ppf l =
+    let open Format in
+    let item ppf i =
+      match i with
+      | `In_object _ ->
+        fprintf ppf "(in-obj)"
+      | `In_array _ ->
+        fprintf ppf "(in-array)"
+      | #value as v ->
+        pp_value ppf v
+    in
+    fprintf ppf "@[{" ;
+    List.iter (item ppf) l ;
+    fprintf ppf "}@]"
+  in
+  let stack = ref [] in
+  let fail_stack fmt =
+    Format.kasprintf
+      (fun m ->
+         let (a, b), (c, d) = Jsonm.decoded_range d in
+         Format.kasprintf failwith "%s [%d,%d - %d,%d stack: %a]" m a b c d
+           pp_stack !stack)
+      fmt
+  in
+  let rec go () =
+    let stack_value (v : [< value]) =
+      match !stack with
+      | `In_array l :: more ->
+        stack := `In_array (v :: l) :: more
+      | `In_object (Some n, l) :: more ->
+        stack := `In_object (None, (n, v) :: l) :: more
+      | [] ->
+        stack := [(v :> Stack_type.t)]
+      | _ ->
+        fail_stack "wrong stack"
+    in
+    let pop () =
+      match !stack with
+      | _ :: more ->
+        stack := more
+      | [] ->
+        fail_stack "cannot remove element from stack"
+    in
+    ( match dec () with
+      | `Os ->
+        stack := `In_object (None, []) :: !stack
+      | `Oe -> (
+          match !stack with
+          | `In_object (Some _, _) :: _ ->
+            fail_stack "name not none"
+          | `In_object (None, l) :: _ ->
+            pop () ;
+            stack_value (`O (List.rev l))
+          | _ ->
+            fail_stack "wrong stack, expecting in-object to close object" )
+      | `As ->
+        stack := `In_array [] :: !stack
+      | `Ae -> (
+          match !stack with
+          | `In_array l :: _ ->
+            pop () ;
+            stack_value (`A (List.rev l))
+          | _ ->
+            fail_stack "array end not in array" )
+      | `Name n -> (
+          match !stack with
+          | `In_object (None, l) :: more ->
+            stack := `In_object (Some n, l) :: more
+          | _ ->
+            fail_stack "wrong stack, expecting in-object for field-name" )
+      | (`Bool _ | `Null | `Float _ | `String _) as v ->
+        stack_value v ) ;
+    match !stack with
+    | `In_array _ :: _ | `In_object _ :: _ ->
+      go ()
+    | [(#value as one)] ->
+      one
+    | [] ->
+      fail_stack "stack is empty"
+    | _ :: _ :: _ ->
+      go ()
+  in
+  try `JSON (go ()) with Escape (r, e) -> `Error (r, e)
 
 exception Parse_error of value * string
 
