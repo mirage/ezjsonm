@@ -104,7 +104,7 @@ let json_of_src src =
   let pp_value ppf v = Format.fprintf ppf "%s" (value_to_string v) in
   let module Stack_type = struct
     type t =
-      [ `A of value List.t
+      [ `A of value list
       | `Bool of bool
       | `Float of float
       | `In_array of value list
