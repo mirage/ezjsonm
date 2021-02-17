@@ -100,6 +100,44 @@ let test_sexp_of_value () =
   let v'' = value_of_sexp @@ sexp_of_value v in
   Alcotest.(check json_v) "sexp_of_value" v v''
 
+module Errors = struct
+  let pp_loc ppf ((a, b), (c, d)) =
+    Format.fprintf ppf "%d:%d...%d:%d" a b c d
+
+  let pp_read_error ppf = function
+    | `Error (loc, err) ->
+      Format.fprintf ppf "`Error at %a: %a" pp_loc loc Jsonm.pp_error err
+    | `Unexpected `End_of_input ->
+      Format.fprintf ppf "Unexpected end of input"
+    | `Unexpected (`Lexeme (loc, lexeme, msg)) ->
+      Format.fprintf ppf "Unexpected lexeme %a at %a: %s"
+        Jsonm.pp_lexeme lexeme pp_loc loc msg
+    | `Not_a_t _v ->
+      Format.fprintf ppf "Expected an array or object"
+
+  let read_error = Alcotest.of_pp pp_read_error
+  let read_result = Alcotest.result json_v read_error
+
+  let test_json_empty () =
+    Alcotest.check' read_result ~msg:"empty input"
+      ~expected:(Error (`Error (((1, 0), (1, 0)), `Expected `Json)))
+      ~actual:(Ezjsonm.from_string_result "")
+
+  let test_json_parse_error () =
+    Alcotest.check' read_result ~msg:"parse error"
+      ~expected:(Error (`Error (((2, 2), (2, 3)), `Illegal_number "1;")))
+      ~actual:(Ezjsonm.from_string_result
+              "[\n\
+               \ 1;\n\
+               \ 2\n\
+               ]")
+
+  let test_json_not_a_value () =
+    Alcotest.check' read_result ~msg:"not a value"
+      ~expected:(Error (`Not_a_t (`Float 42.)))
+      ~actual:(Ezjsonm.from_string_result "42")
+end
+
 let () =
   let suite k (t, ts) = k, ["test", `Quick, tests t ts] in
   Alcotest.run "ezjsonm" [
@@ -111,5 +149,10 @@ let () =
     "sexp", [
       "sexp_of_t", `Quick, test_sexp_of_t;
       "sexp_of_value", `Quick, test_sexp_of_value;
+    ];
+    "errors", [
+      "error: empty", `Quick, Errors.test_json_empty;
+      "error: parse error", `Quick, Errors.test_json_parse_error;
+      "error: not a value", `Quick, Errors.test_json_not_a_value;
     ];
   ]
