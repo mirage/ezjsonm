@@ -1,0 +1,15 @@
+(executable
+ (name main)
+ (modules main contracts script)
+ (libraries ezjsonm)
+ (modes js))
+
+(rule
+ (target main.js)
+ (deps main.bc.js)
+ (mode promote)
+ (action (run cp %{deps} %{target})))
+
+(alias
+ (name app_with_jsoo)
+ (deps main.js min.html))

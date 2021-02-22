@@ -43,35 +43,57 @@ type read_value_error = [
 ]
 type read_error = [ read_value_error | `Not_a_t of value ]
 
-let json_of_src src : (value, [> read_value_error]) result =
-  let d = Jsonm.decoder src in
-  let exception Abort of read_value_error in
-  let loc () = Jsonm.decoded_range d in
-  let dec () = match Jsonm.decode d with
-    | `Lexeme l -> l
-    | `Error e  -> raise (Abort (`Error (loc (), e)))
-    | `End      -> raise (Abort (`Unexpected `End_of_input))
-    | `Await    -> assert false
-  in
-  let rec value l k = match l with
-    | `Os -> obj [] k
-    | `As -> arr [] k
-    | `Null
-    | `Bool _
-    | `String _
-    | `Float _ as l -> k l
-    | _ ->
-      raise (Abort (`Unexpected (`Lexeme (loc (), l, "value"))))
-  and arr vs k = match dec () with
+exception Abort of read_value_error
+
+let loc decoder = Jsonm.decoded_range decoder
+
+let dec decoder = match Jsonm.decode decoder with
+  | `Lexeme l -> l
+  | `Error e -> raise (Abort (`Error (loc decoder, e)))
+  | `End -> raise (Abort (`Unexpected `End_of_input))
+  | `Await -> assert false
+
+type value_ =
+  | Value of Jsonm.lexeme
+  | Arr of value list
+  | Obj of (string * value) list
+and atom = [ `Bool of bool | `Float of float | `Null | `String of string ]
+
+let identity x = x
+
+let is_jsoo = match Sys.backend_type with
+  | Native | Bytecode -> false | _ -> true
+
+let rec unroll_arr vs decoder =
+  let v = ref `Ae in
+  let res = ref vs in
+  while v := dec decoder ; !v <> `Ae do
+    res := loop decoder (Value !v) identity :: !res ;
+  done ; `A (List.rev !res)
+
+and loop decoder f k = match f with
+  | Value l ->
+    ( match l with
+    | `Os -> loop decoder (Obj []) k
+    | `As -> loop decoder (Arr []) k
+    | #atom as v -> k (v :> value)
+    | l -> raise (Abort (`Unexpected (`Lexeme (loc decoder, l, "value")))) )
+  | Arr vs when is_jsoo ->
+    k (unroll_arr vs decoder)
+  | Arr vs ->
+    ( match dec decoder with
     | `Ae -> k (`A (List.rev vs))
-    | l   -> value l (fun v -> arr (v :: vs) k)
-  and obj ms k = match dec () with
-    | `Oe     -> k (`O (List.rev ms))
-    | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
-    | l       ->
-      raise (Abort (`Unexpected (`Lexeme (loc (), l, "object fields"))))
-  in
-  try Ok (value (dec ()) (fun x -> x))
+    | v ->
+      loop decoder (Value v) (fun v -> loop decoder (Arr (v :: vs)) k) )
+  | Obj ms ->
+    ( match dec decoder with
+    | `Oe -> k (`O (List.rev ms))
+    | `Name n -> loop decoder (Value (dec decoder)) (fun v -> loop decoder (Obj ((n, v) :: ms)) k)
+    | l -> raise (Abort (`Unexpected (`Lexeme (loc decoder, l, "object fields")))) )
+
+let json_of_src src : (value, [> read_value_error]) result =
+  let decoder = Jsonm.decoder src in
+  try Ok (loop decoder (Value (dec decoder)) identity)
   with Abort (#read_value_error as err) -> Error err
 
 let value_to_dst ?(minify=true) dst json =
