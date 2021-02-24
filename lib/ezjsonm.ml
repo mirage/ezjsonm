@@ -29,8 +29,6 @@ type t =
 
 let value: t -> value = fun t -> (t :> value)
 
-exception Escape of ((int * int) * (int * int)) * Jsonm.error
-
 module List = struct
   include List
 
@@ -38,32 +36,43 @@ module List = struct
   let map f l = rev (rev_map f l)
 end
 
-let json_of_src src =
+type error_location = (int * int) * (int * int)
+type read_value_error = [
+  | `Error of error_location * Jsonm.error
+  | `Unexpected of [ `Lexeme of error_location * Jsonm.lexeme * string | `End_of_input ]
+]
+type read_error = [ read_value_error | `Not_a_t of value ]
+
+let json_of_src src : (value, [> read_value_error]) result =
   let d = Jsonm.decoder src in
+  let exception Abort of read_value_error in
+  let loc () = Jsonm.decoded_range d in
   let dec () = match Jsonm.decode d with
     | `Lexeme l -> l
-    | `Error e  -> raise (Escape (Jsonm.decoded_range d, e))
-    | `End
+    | `Error e  -> raise (Abort (`Error (loc (), e)))
+    | `End      -> raise (Abort (`Unexpected `End_of_input))
     | `Await    -> assert false
   in
-  let rec value v k = match v with
+  let rec value l k = match l with
     | `Os -> obj [] k
     | `As -> arr [] k
     | `Null
     | `Bool _
     | `String _
-    | `Float _ as v -> k v
-    | _ -> assert false
+    | `Float _ as l -> k l
+    | _ ->
+      raise (Abort (`Unexpected (`Lexeme (loc (), l, "value"))))
   and arr vs k = match dec () with
     | `Ae -> k (`A (List.rev vs))
-    | v   -> value v (fun v -> arr (v :: vs) k)
+    | l   -> value l (fun v -> arr (v :: vs) k)
   and obj ms k = match dec () with
     | `Oe     -> k (`O (List.rev ms))
     | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
-    | _       -> assert false
+    | l       ->
+      raise (Abort (`Unexpected (`Lexeme (loc (), l, "object fields"))))
   in
-  try `JSON (value (dec ()) (fun x -> x))
-  with Escape (r, e) -> `Error (r, e)
+  try Ok (value (dec ()) (fun x -> x))
+  with Abort (#read_value_error as err) -> Error err
 
 let value_to_dst ?(minify=true) dst json =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
@@ -116,26 +125,50 @@ let unwrap = function
   | `A [t] -> t
   | v -> parse_error (v :> value) "Not unwrappable"
 
-let string_of_error error =
-  Jsonm.pp_error Format.str_formatter error;
-  Format.flush_str_formatter ()
+let read_error_description : [< read_error ] -> string = function
+  | `Error (_loc, err) ->
+    Format.asprintf "%a" Jsonm.pp_error err
+  | `Unexpected `End_of_input ->
+    Format.sprintf "Unexpected end of input"
+  | `Unexpected (`Lexeme (_loc, _l, expectation)) ->
+    Format.sprintf "Unexpected input when parsing a %s" expectation
+  | `Not_a_t _value ->
+    "We expected a well-formed JSON document (array or object)"
+
+let read_error_location : [< read_error ] -> error_location option = function
+  | `Error (loc, _) -> Some loc
+  | `Unexpected `End_of_input -> None
+  | `Unexpected (`Lexeme (loc, _l, _expectation)) -> Some loc
+  | `Not_a_t _value -> None
+
+let value_from_src_result src = json_of_src src
 
 let value_from_src src =
-  match json_of_src src with
-  | `JSON t      -> t
-  | `Error (_,e) -> parse_error `Null "JSON.of_buffer %s" (string_of_error e)
+  match value_from_src_result src with
+  | Ok t      -> t
+  | Error e -> parse_error `Null "JSON.of_buffer %s" (read_error_description e)
 
+let value_from_string_result str = value_from_src_result (`String str)
 let value_from_string str = value_from_src (`String str)
 
+let value_from_channel_result chan = value_from_src_result (`Channel chan)
 let value_from_channel chan = value_from_src (`Channel chan)
+
+let ensure_document_result: [> value] -> ([> t], [> read_error]) result = function
+  | #t as t -> Ok t
+  | value -> Error (`Not_a_t value)
 
 let ensure_document: [> value] -> [> t] = function
   | #t as t -> t
   | t -> raise (Parse_error (t, "not a valid JSON array/object"))
 
 let from_string str = value_from_string str |> ensure_document
-
 let from_channel chan = value_from_channel chan |> ensure_document
+
+let from_string_result str =
+  Result.bind (value_from_string_result str) ensure_document_result
+let from_channel_result chan =
+  Result.bind (value_from_channel_result chan) ensure_document_result
 
 (* unit *)
 let unit () = `Null

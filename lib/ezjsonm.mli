@@ -54,7 +54,6 @@ val unwrap: t -> value
     singleton JSON object and it return the unique element. *)
 
 (** {2 Reading JSON documents and values} *)
-
 val from_channel: in_channel -> [> t]
 (** Read a JSON document from an input channel. *)
 
@@ -69,6 +68,41 @@ val value_from_string: string -> value
 
 val value_from_src: Jsonm.src -> value
 (** Low-level function to read directly from a [Jsonm] source. *)
+
+(** {2 Reading JSON documents and values -- with proper errors} *)
+
+type error_location = (int * int) * (int * int)
+(** Error locations in a source document follow the Jsonm representation
+    of pairs of pairs [((start_line, start_col), (end_line, end_col))]
+    with 0-indexed lines and 1-indexed columns. *)
+
+type read_value_error = [
+  | `Error of error_location * Jsonm.error
+  | `Unexpected of [ `Lexeme of error_location * Jsonm.lexeme * string | `End_of_input ]
+]
+type read_error = [ read_value_error | `Not_a_t of value ]
+
+val read_error_description : [< read_error ] -> string
+(** A human-readable description of an error -- without using the error location. *)
+
+val read_error_location : [< read_error ] -> error_location option
+(** If the error is attached to a specific location in the buffer,
+    return this location. *)
+
+val from_channel_result: in_channel -> ([> t], [> read_error]) result
+(** See {!from_channel}. *)
+
+val from_string_result: string -> ([> t], [> read_error]) result
+(** See {!from_string}. *)
+
+val value_from_channel_result: in_channel -> (value, [> read_value_error]) result
+(** See {!value_from_channel}. *)
+
+val value_from_string_result: string -> (value, [> read_value_error]) result
+(** See {!value_from_string}. *)
+
+val value_from_src_result: Jsonm.src -> (value, [> read_value_error]) result
+(** See {!value_from_src}. *)
 
 (** {2 Writing JSON documents and values} *)
 
