@@ -32,9 +32,17 @@ let list =
     test    = Alcotest.(list string); },
   [
     random_list 30 random_string;
-    random_list 10 (fun _ -> "foo")
+    random_list 10 (fun _ -> "foo");
+    random_list 10000 (fun _ -> random_string 10);
   ]
 
+let dict =
+  { to_json = Ezjsonm.(dict);
+    of_json = Ezjsonm.(get_dict);
+    test    = Alcotest.(list (pair string json_v)); },
+  [
+    random_list 10000 (fun _ -> random_string 20, Ezjsonm.strings (random_list 10 random_string));
+  ]
 
 let tests t ts () = List.iter (test t) ts
 
@@ -93,6 +101,7 @@ let () =
   Alcotest.run "ezjsonm" [
     suite "string" string;
     suite "list"   list;
+    suite "dict"   dict;
     "sexp", [
       "sexp_of_t", `Quick, test_sexp_of_t;
       "sexp_of_value", `Quick, test_sexp_of_value;
