@@ -43,6 +43,10 @@ type read_value_error = [
 ]
 type read_error = [ read_value_error | `Not_a_t of value ]
 
+let has_genaral_tc_opt = match Sys.backend_type with
+  | Native | Bytecode -> true
+  | Other _ -> false
+
 let json_of_src src : (value, [> read_value_error]) result =
   let d = Jsonm.decoder src in
   let exception Abort of read_value_error in
@@ -54,20 +58,32 @@ let json_of_src src : (value, [> read_value_error]) result =
     | `Await    -> assert false
   in
   let rec value l k = match l with
-    | `Os -> obj [] k
-    | `As -> arr [] k
+    | `Os -> if has_genaral_tc_opt then obj_cps [] k else k (obj [])
+    | `As -> if has_genaral_tc_opt then arr_cps [] k else k (arr [])
     | `Null
     | `Bool _
     | `String _
     | `Float _ as l -> k l
     | _ ->
       raise (Abort (`Unexpected (`Lexeme (loc (), l, "value"))))
-  and arr vs k = match dec () with
+  and arr_cps vs k = match dec () with
     | `Ae -> k (`A (List.rev vs))
-    | l   -> value l (fun v -> arr (v :: vs) k)
-  and obj ms k = match dec () with
+    | l   -> value l (fun v -> arr_cps (v :: vs) k)
+  and arr vs = match dec () with
+    | `Ae -> `A (List.rev vs)
+    | l ->
+       let v = value l (fun x -> x) in
+       arr (v :: vs)
+  and obj_cps ms k = match dec () with
     | `Oe     -> k (`O (List.rev ms))
-    | `Name n -> value (dec ()) (fun v -> obj ((n, v) :: ms) k)
+    | `Name n -> value (dec ()) (fun v -> obj_cps ((n, v) :: ms) k)
+    | l       ->
+      raise (Abort (`Unexpected (`Lexeme (loc (), l, "object fields"))))
+  and obj ms = match dec () with
+    | `Oe     -> (`O (List.rev ms))
+    | `Name n ->
+       let v = value (dec ()) (fun v -> v) in
+       obj ((n, v) :: ms)
     | l       ->
       raise (Abort (`Unexpected (`Lexeme (loc (), l, "object fields"))))
   in
@@ -77,19 +93,32 @@ let json_of_src src : (value, [> read_value_error]) result =
 let value_to_dst ?(minify=true) dst json =
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
   let rec t v k e = match v with
-    | `A vs -> arr vs k e
-    | `O ms -> obj ms k e
+    | `A vs ->
+       enc e `As;
+       if has_genaral_tc_opt then arr_cps vs k e else (arr vs e; k e)
+    | `O ms ->
+       enc e `Os;
+       if has_genaral_tc_opt then obj_cps ms k e else (obj ms e; k e)
   and value v k e = match v with
     | `Null | `Bool _ | `Float _ | `String _ as v -> enc e v; k e
     | #t as x -> t (x :> t) k e
-  and arr vs k e = enc e `As; arr_vs vs k e
-  and arr_vs vs k e = match vs with
-    | v :: vs' -> value v (arr_vs vs' k) e
+  and arr_cps vs k e = match vs with
+    | v :: vs' -> value v (arr_cps vs' k) e
     | [] -> enc e `Ae; k e
-  and obj ms k e = enc e `Os; obj_ms ms k e
-  and obj_ms ms k e = match ms with
-    | (n, v) :: ms -> enc e (`Name n); value v (obj_ms ms k) e
+  and arr vs e = match vs with
+    | v :: vs' ->
+       value v (fun _ -> ()) e;
+       arr vs' e
+    | [] -> enc e `Ae
+  and obj_cps ms k e = match ms with
+    | (n, v) :: ms -> enc e (`Name n); value v (obj_cps ms k) e
     | [] -> enc e `Oe; k e
+  and obj ms e = match ms with
+    | (n, v) :: ms ->
+       enc e (`Name n);
+       value v (fun _ -> ()) e;
+       obj ms e
+    | [] -> enc e `Oe
   in
   let e = Jsonm.encoder ~minify dst in
   let finish e = ignore (Jsonm.encode e `End) in
