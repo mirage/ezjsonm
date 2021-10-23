@@ -36,7 +36,7 @@
   (run %{<})))
 
 (rule
- (alias runtest)
+ (alias runtest-js)
  (package ezjsonm-lwt)
  (deps
   (:< test.bc.js))
