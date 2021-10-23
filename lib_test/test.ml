@@ -44,6 +44,25 @@ let dict =
     random_list 10000 (fun _ -> random_string 20, Ezjsonm.strings (random_list 10 random_string));
   ]
 
+let deeply_nested =
+  { to_json = (fun x -> x)
+  ; of_json = (fun x -> x)
+  ; test = Alcotest.testable (fun ppf x -> Fmt.pf ppf "%s" (Ezjsonm.value_to_string x)) (fun x y -> x = y) },
+  let rec deep_list n v =
+    match n with
+    | 0 -> v
+    | n -> deep_list (n - 1) (Ezjsonm.list (fun x -> x) [v])
+  in
+  let rec deep_dict n v =
+    match n with
+    | 0 -> v
+    | n -> deep_dict (n - 1) (Ezjsonm.dict [ ("name", v) ])
+  in
+  [
+    deep_list 10_000 (Ezjsonm.bool true);
+    deep_dict 10_000 (Ezjsonm.bool true);
+  ]
+
 let tests t ts () = List.iter (test t) ts
 
 let test_sexp_of_t () =
@@ -102,6 +121,7 @@ let () =
     suite "string" string;
     suite "list"   list;
     suite "dict"   dict;
+    suite "nested" deeply_nested;
     "sexp", [
       "sexp_of_t", `Quick, test_sexp_of_t;
       "sexp_of_value", `Quick, test_sexp_of_value;
