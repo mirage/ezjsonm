@@ -48,8 +48,9 @@ let json_of_src src : (value, [> read_value_error]) result =
   let exception Abort of read_value_error in
   let module Stack = struct
       type t =
-        | In_array of value list
-        | In_object of string * (string * value) list
+        | In_array of value list * t
+        | In_object of string * (string * value) list * t
+        | Empty
     end
   in
   let loc () = Jsonm.decoded_range d in
@@ -71,33 +72,34 @@ let json_of_src src : (value, [> read_value_error]) result =
   and arr so_far stack = match dec () with
     | `Ae -> continue (`A (List.rev so_far)) stack
     | l ->
-      let stack = Stack.In_array so_far :: stack in
+      let stack = Stack.In_array (so_far, stack) in
       value l stack
   and obj so_far stack = match dec () with
     | `Oe -> continue (`O (List.rev so_far)) stack
     | `Name n ->
-       let stack = Stack.In_object (n, so_far) :: stack in
+       let stack = Stack.In_object (n, so_far, stack) in
        value (dec ()) stack
     | l       ->
        raise (Abort (`Unexpected (`Lexeme (loc (), l, "object fields"))))
   and continue v stack =
     match stack with
-    | Stack.In_array vs :: stack ->
+    | Stack.In_array (vs, stack) ->
        let so_far = (v :: vs) in
        arr so_far stack
-    | Stack.In_object (n, ms) :: stack ->
+    | Stack.In_object (n, ms, stack) ->
        let so_far = ((n,v) :: ms) in
        obj so_far stack
-    | [] -> v
+    | Stack.Empty -> v
   in
-  try Ok (value (dec ()) [])
+  try Ok (value (dec ()) Empty)
   with Abort (#read_value_error as err) -> Error err
 
 let value_to_dst ?(minify=true) dst json =
   let module Stack = struct
       type t =
-        | In_array of value list
-        | In_object of (string * value) list
+        | In_array of value list * t
+        | In_object of (string * value) list * t
+        | Empty
     end
   in
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
@@ -115,22 +117,22 @@ let value_to_dst ?(minify=true) dst json =
     | #t as x -> t (x :> t) e stack
   and arr vs e stack = match vs with
     | v :: vs' ->
-       let stack = (Stack.In_array vs') :: stack in
+       let stack = Stack.In_array (vs', stack) in
        value v e stack
     | [] -> enc e `Ae; continue e stack
   and obj ms e stack = match ms with
     | (n, v) :: ms ->
        enc e (`Name n);
-       let stack = (Stack.In_object ms) :: stack in
+       let stack = Stack.In_object (ms, stack) in
        value v e stack
     | [] -> enc e `Oe; continue e stack
   and continue e stack = match stack with
-    | (Stack.In_array vs) :: stack -> arr vs e stack
-    | (Stack.In_object ms) :: stack -> obj ms e stack
-    | [] -> ()
+    | Stack.In_array (vs, stack) -> arr vs e stack
+    | Stack.In_object (ms, stack) -> obj ms e stack
+    | Stack.Empty -> ()
   in
   let e = Jsonm.encoder ~minify dst in
-  value json e [];
+  value json e Stack.Empty;
   ignore (Jsonm.encode e `End)
 
 let value_to_buffer ?minify buf json =
