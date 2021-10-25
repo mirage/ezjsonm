@@ -13,6 +13,7 @@ depends: [
   "jsonm" {>= "1.0.0"}
   "uutf"
   "js_of_ocaml-compiler" {with-test}
+  "conf-npm" {with-test}
   "sexplib0"
   "hex"
 ]
