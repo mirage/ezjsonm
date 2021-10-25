@@ -1,6 +1,21 @@
+(library
+ (name test_helper)
+ (modules test_helper)
+ (libraries ezjsonm alcotest)
+)
+
 (executables
  (names test)
- (libraries alcotest ezjsonm ezjsonm-lwt lwt.unix)
+ (modules test)
+ (libraries test_helper alcotest ezjsonm)
+ (modes native js)
+ (preprocess
+  (pps ppx_sexp_conv)))
+
+(executables
+ (names test_unix)
+ (modules test_unix)
+ (libraries test_helper alcotest ezjsonm ezjsonm-lwt lwt.unix)
  (preprocess
   (pps ppx_sexp_conv)))
 
@@ -11,3 +26,19 @@
   (:< test.exe))
  (action
   (run %{<})))
+
+(rule
+ (alias runtest)
+ (package ezjsonm-lwt)
+ (deps
+  (:< test_unix.exe))
+ (action
+  (run %{<})))
+
+(rule
+ (alias runtest)
+ (package ezjsonm-lwt)
+ (deps
+  (:< test.bc.js))
+ (action
+  (run %{bin:node} %{<})))

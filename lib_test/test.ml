@@ -1,39 +1,9 @@
+open Test_helper
 (* Check we're compatible with sexplib *)
 type test = {
   foo: Ezjsonm.value;
   bar: Ezjsonm.t;
 } [@@deriving sexp]
-
-let json_t: Ezjsonm.t Alcotest.testable =
-  (module struct
-    type t = Ezjsonm.t
-    let equal = (=)
-    let pp ppf x = Format.pp_print_string ppf (Ezjsonm.to_string x)
-  end)
-
-let json_v: Ezjsonm.value Alcotest.testable =
-  (module struct
-    type t = Ezjsonm.value
-    let equal = (=)
-    let pp ppf x = Format.pp_print_string ppf Ezjsonm.(value_to_string x)
-  end)
-
-let random_int i =
-  if i <= 1 then 0
-  else Random.int i
-
-let random_string len =
-  let s = Bytes.create (random_int len) in
-  for i = 0 to Bytes.length s - 1 do
-    Bytes.set s i @@ Char.chr (random_int 127)
-  done;
-  Bytes.to_string s
-
-let random_list len gen =
-  Array.to_list (Array.init len gen)
-
-let random_bool () =
-  Random.int 2 = 0
 
 type 'a x = {
   to_json: 'a -> Ezjsonm.value;
@@ -62,31 +32,38 @@ let list =
     test    = Alcotest.(list string); },
   [
     random_list 30 random_string;
-    random_list 10 (fun _ -> "foo")
+    random_list 10 (fun _ -> "foo");
+    random_list 10000 (fun _ -> random_string 10);
   ]
 
-let test_stream jsons () =
-  let jsons = List.map Ezjsonm.wrap jsons in
-  let jsons, last = match jsons with
-    | []   -> assert false
-    | h::t -> t, h
+let dict =
+  { to_json = Ezjsonm.(dict);
+    of_json = Ezjsonm.(get_dict);
+    test    = Alcotest.(list (pair string json_v)); },
+  [
+    random_list 10000 (fun _ -> random_string 20, Ezjsonm.strings (random_list 10 random_string));
+  ]
+
+let deeply_nested =
+  { to_json = (fun x -> x)
+  ; of_json = (fun x -> x)
+  ; test = Alcotest.testable (fun ppf x -> Fmt.pf ppf "%s" (Ezjsonm.value_to_string x)) (fun x y -> x = y) },
+  let rec deep_list n v =
+    match n with
+    | 0 -> v
+    | n -> deep_list (n - 1) (Ezjsonm.list (fun x -> x) [v])
   in
-  let string j = Ezjsonm.to_string j in
-  let strings = List.map (fun j -> string j ^ ",") jsons in
-  let strings = "[" :: strings @ [string last; "]"] in
-  let jsons = jsons @ [last] in
-  Lwt_main.run begin
-    let open Lwt.Infix in
-    let stream = Lwt_stream.of_list strings in
-    let stream = Ezjsonm_lwt.from_stream stream in
-    Lwt_stream.to_list stream >|= fun json' ->
-    Alcotest.(check @@ list json_v) "stream" jsons json'
-  end
+  let rec deep_dict n v =
+    match n with
+    | 0 -> v
+    | n -> deep_dict (n - 1) (Ezjsonm.dict [ ("name", v) ])
+  in
+  [
+    deep_list 10_000 (Ezjsonm.bool true);
+    deep_dict 10_000 (Ezjsonm.bool true);
+  ]
 
 let tests t ts () = List.iter (test t) ts
-
-let stream0 =
-  random_list 42 (fun i -> Ezjsonm.(string @@ random_string i))
 
 let test_sexp_of_t () =
   let t = `A [ `String "hello" ] in
@@ -143,9 +120,8 @@ let () =
   Alcotest.run "ezjsonm" [
     suite "string" string;
     suite "list"   list;
-    "stream", [
-      "stream0", `Quick, test_stream stream0;
-    ];
+    suite "dict"   dict;
+    suite "nested" deeply_nested;
     "sexp", [
       "sexp_of_t", `Quick, test_sexp_of_t;
       "sexp_of_value", `Quick, test_sexp_of_value;

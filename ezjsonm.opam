@@ -9,8 +9,11 @@ bug-reports: "https://github.com/mirage/ezjsonm/issues"
 depends: [
   "ocaml" {>="4.08.0"}
   "dune" {>= "2.0"}
-  "alcotest" {with-test & >= "0.4.0"}
+  "alcotest" {with-test & >= "1.5.0"}
   "jsonm" {>= "1.0.0"}
+  "uutf"
+  "js_of_ocaml-compiler" {with-test}
+  "conf-npm" {with-test}
   "sexplib0"
   "hex"
 ]
