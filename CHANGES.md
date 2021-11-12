@@ -1,3 +1,10 @@
+## v1.3.0 (2021-11-12)
+
+* Provide `*_result` variants of reading functions with informative errors
+  (@gasche, @dinosaure, #43)
+* Improve support of `js_of_ocaml` and be able to parse huge JSON values
+  (@hhugo, @dinosaure, @avsm, @smondet, @gasche)
+
 ## v1.2.0 (2020-07-28)
 
 * Add `find_opt` to provide an exception-less version of `find` (#39 @avsm)
