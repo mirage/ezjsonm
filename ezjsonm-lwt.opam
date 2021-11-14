@@ -8,17 +8,19 @@ doc: "https://mirage.github.io/ezjsonm"
 bug-reports: "https://github.com/mirage/ezjsonm/issues"
 depends: [
   "ocaml"
-  "ezjsonm"
-  "dune" {>= "1.0"}
-  "alcotest" {with-test & >= "0.4.0"}
-  "ppx_sexp_conv" {with-test}
+  "ezjsonm" {=version}
+  "dune" {>= "2.0"}
+  "alcotest" {with-test & >= "1.2.0"}
+  "ppx_sexp_conv" {with-test & >= "v0.12.0"}
   "jsonm" {>= "1.0.0"}
   "sexplib"
   "hex"
   "lwt" {>= "2.5.0"}
+  "conf-npm" {with-test}
+  "js_of_ocaml-compiler" {with-test}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
