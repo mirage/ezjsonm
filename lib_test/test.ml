@@ -89,8 +89,6 @@ module Errors = struct
     | `Unexpected (`Lexeme (loc, lexeme, msg)) ->
       Format.fprintf ppf "Unexpected lexeme %a at %a: %s"
         Jsonm.pp_lexeme lexeme pp_loc loc msg
-    | `Not_a_t _v ->
-      Format.fprintf ppf "Expected an array or object"
 
   let read_error = Alcotest.of_pp pp_read_error
   let read_result = Alcotest.result json_v read_error
@@ -108,11 +106,6 @@ module Errors = struct
                \ 1;\n\
                \ 2\n\
                ]")
-
-  let test_json_not_a_value () =
-    Alcotest.check' read_result ~msg:"not a value"
-      ~expected:(Error (`Not_a_t (`Float 42.)))
-      ~actual:(Ezjsonm.from_string_result "42")
 end
 
 let () =
@@ -129,6 +122,5 @@ let () =
     "errors", [
       "error: empty", `Quick, Errors.test_json_empty;
       "error: parse error", `Quick, Errors.test_json_parse_error;
-      "error: not a value", `Quick, Errors.test_json_not_a_value;
     ];
   ]

@@ -23,11 +23,9 @@ type value =
   | `A of value list
   | `O of (string * value) list ]
 
-type t =
-  [ `A of value list
-  | `O of (string * value) list ]
+type t = value
 
-let value: t -> value = fun t -> (t :> value)
+let value v = v
 
 module List = struct
   include List
@@ -37,11 +35,11 @@ module List = struct
 end
 
 type error_location = (int * int) * (int * int)
-type read_value_error = [
+type read_error = [
   | `Error of error_location * Jsonm.error
   | `Unexpected of [ `Lexeme of error_location * Jsonm.lexeme * string | `End_of_input ]
 ]
-type read_error = [ read_value_error | `Not_a_t of value ]
+type read_value_error = read_error
 
 let json_of_src src : (value, [> read_value_error]) result =
   let d = Jsonm.decoder src in
@@ -103,18 +101,16 @@ let value_to_dst ?(minify=true) dst json =
     end
   in
   let enc e l = ignore (Jsonm.encode e (`Lexeme l)) in
-  let rec t v e stack = match v with
-    | `A vs ->
-       enc e `As;
-       arr vs e stack
-    | `O ms ->
-       enc e `Os;
-       obj ms e stack
-  and value v e stack = match v with
+  let rec value v e stack = match v with
     | `Null | `Bool _ | `Float _ | `String _ as v ->
        enc e v;
        continue e stack
-    | #t as x -> t (x :> t) e stack
+    | `A ms ->
+       enc e `As;
+       arr ms e stack
+    | `O ms ->
+       enc e `Os;
+       obj ms e stack
   and arr vs e stack = match vs with
     | v :: vs' ->
        let stack = Stack.In_array (vs', stack) in
@@ -172,14 +168,11 @@ let read_error_description : [< read_error ] -> string = function
     Format.sprintf "Unexpected end of input"
   | `Unexpected (`Lexeme (_loc, _l, expectation)) ->
     Format.sprintf "Unexpected input when parsing a %s" expectation
-  | `Not_a_t _value ->
-    "We expected a well-formed JSON document (array or object)"
 
 let read_error_location : [< read_error ] -> error_location option = function
   | `Error (loc, _) -> Some loc
   | `Unexpected `End_of_input -> None
   | `Unexpected (`Lexeme (loc, _l, _expectation)) -> Some loc
-  | `Not_a_t _value -> None
 
 let value_from_src_result src = json_of_src src
 
@@ -195,12 +188,14 @@ let value_from_channel_result chan = value_from_src_result (`Channel chan)
 let value_from_channel chan = value_from_src (`Channel chan)
 
 let ensure_document_result: [> value] -> ([> t], [> read_error]) result = function
+  (* There is no distinction between documents and values
+     in JSON standards since 2018. *)
   | #t as t -> Ok t
-  | value -> Error (`Not_a_t value)
 
 let ensure_document: [> value] -> [> t] = function
+  (* There is no distinction between documents and values       
+     in JSON standards since 2018. *)
   | #t as t -> t
-  | t -> raise (Parse_error (t, "not a valid JSON array/object"))
 
 let from_string str = value_from_string str |> ensure_document
 let from_channel chan = value_from_channel chan |> ensure_document

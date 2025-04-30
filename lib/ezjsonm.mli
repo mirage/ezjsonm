@@ -35,23 +35,20 @@ type value =
   | `String of string
   | `A of value list
   | `O of (string * value) list ]
-(** JSON fragments. *)
+(** JSON values. *)
 
-type t =
-  [ `A of value list
-  | `O of (string * value) list ]
-(** Well-formed JSON documents. *)
+type t = value
+(** Alias for [value] *)
 
 val value: t -> value
-(** Cast a JSON well-formed document into a JSON fragment. *)
+(** Obsolete, retained for compatibility only. *)
 
 val wrap: value -> [> t]
-(** [wrap v] wraps the value [v] into a JSON array. To use when it is
-    not possible to statically know that [v] is a value JSON value. *)
+(** [wrap v] wraps the value [v] into a JSON array. *)
 
 val unwrap: t -> value
-(** [unwrap t] is the reverse of [wrap]. It expects [t] to be a
-    singleton JSON object and it return the unique element. *)
+(** [unwrap t] is the reverse of [wrap].
+    It takes a single-item array and extracts its sole item. *)
 
 (** {2 Reading JSON documents and values} *)
 val from_channel: in_channel -> [> t]
@@ -61,10 +58,10 @@ val from_string: string -> [> t]
 (** Read a JSON document from a string. *)
 
 val value_from_channel: in_channel -> value
-(** Read a JSON value from an input channel. *)
+(** Alias for [from_channel]. *)
 
 val value_from_string: string -> value
-(** Read a JSON value from a string. *)
+(** Alias for [from_string]. *)
 
 val value_from_src: Jsonm.src -> value
 (** Low-level function to read directly from a [Jsonm] source. *)
@@ -76,11 +73,11 @@ type error_location = (int * int) * (int * int)
     of pairs of pairs [((start_line, start_col), (end_line, end_col))]
     with 0-indexed lines and 1-indexed columns. *)
 
-type read_value_error = [
+type read_error = [
   | `Error of error_location * Jsonm.error
   | `Unexpected of [ `Lexeme of error_location * Jsonm.lexeme * string | `End_of_input ]
 ]
-type read_error = [ read_value_error | `Not_a_t of value ]
+type read_value_error = read_error
 
 val read_error_description : [< read_error ] -> string
 (** A human-readable description of an error -- without using the error location. *)
