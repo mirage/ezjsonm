@@ -166,12 +166,23 @@ let unwrap = function
   | v -> parse_error (v :> value) "Not unwrappable"
 
 let read_error_description : [< read_error ] -> string = function
-  | `Error (_loc, err) ->
-    Format.asprintf "%a" Jsonm.pp_error err
+  | `Error (((l1, c1), (l2, c2)), err) ->
+    Format.asprintf "Error at location (%d,%d) -- (%d,%d): %a"
+      l1
+      c1
+      l2
+      c2
+      Jsonm.pp_error err
   | `Unexpected `End_of_input ->
     Format.sprintf "Unexpected end of input"
-  | `Unexpected (`Lexeme (_loc, _l, expectation)) ->
-    Format.sprintf "Unexpected input when parsing a %s" expectation
+  | `Unexpected (`Lexeme (((l1, c1), (l2, c2)), _l, expectation)) ->
+    Format.sprintf
+      "Unexpected input at location (%d,%d) -- (%d,%d) when parsing a %s"
+      l1
+      c1
+      l2
+      c2
+      expectation
   | `Not_a_t _value ->
     "We expected a well-formed JSON document (array or object)"
 
